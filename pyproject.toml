@@ -1,0 +1,14 @@
+[project]
+name = "thoad"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Miguel Montes Lorenzo", email = "112613446+MiguelMontesLorenzo@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
