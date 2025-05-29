@@ -36,3 +36,17 @@ See the [LICENSE](LICENSE) file for details.
 
 **PyTorch** is distributed under the [BSD 3-Clause License](https://opensource.org/license/BSD-3-Clause).  
 See PyTorch’s own [LICENSE](https://github.com/pytorch/pytorch/blob/main/LICENSE) file for its full terms.
+
+<br>
+
+## How to cite thoad
+
+If you use **thoad** in your work, please cite it with the following BibTeX entry:
+
+```bibtex
+@Misc{thoad2025,
+  title        = {thoad: PyTorch High Order AutoDifferentiator},
+  howpublished = {\url{https://github.com/mntsx/thoad}},
+  year         = {2025}
+}
+```
