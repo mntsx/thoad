@@ -11,4 +11,4 @@
 
 ## Introduction
 
-**thoad** is a lightweight, pure-Python autodifferentiation engine that operates over PyTorch’s computational graph to compute **arbitrary-order partial derivatives**. Unlike PyTorch’s native autograd - which stops at first-order derivatives - **thoad** propagates higher-order derivatives throughout the graph, enabling more advanced gradient-based computations.
+**thoad** is a lightweight autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
