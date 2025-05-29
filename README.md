@@ -8,8 +8,32 @@
 
 <br>
 
-> Note: This repository is still under development. Some of its functionalities may exhibit incomplete or incorrect behavior.
+> \[!NOTE]
+> This package is currently in an experimental release. It may exhibit unstable behavior or produce unexpected results, and is subject to possible minor structural modifications in the future.
+
+<br>
 
 ## Introduction
 
 **thoad** is a lightweight autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
+
+<br>
+
+## Future Plans
+  
+- **Extend Backward Functionality**  
+  Develop further backprop capabilities to improve operator integration and broaden support for PyTorch’s full operator set.
+
+- **Advanced Optimization Framework**  
+  Build an optimization module inspired by the design of `torch.optim`, with full support for higher-order gradients and flexible optimizer composition.
+
+
+<br>
+
+## License
+
+**This project** is licensed under the [MIT License](https://opensource.org/licenses/MIT).  
+See the [LICENSE](LICENSE) file for details.
+
+**PyTorch** is distributed under the [BSD 3-Clause License](https://opensource.org/license/BSD-3-Clause).  
+See PyTorch’s own [LICENSE](https://github.com/pytorch/pytorch/blob/main/LICENSE) file for its full terms.
