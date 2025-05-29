@@ -21,7 +21,7 @@
 ## Future Plans
   
 - **Extend Backward Functionality**  
-  Develop further backprop capabilities to improve operator integration and broaden support for PyTorch’s full operator set.
+  Enhance backprop capabilities to improve operator integration and support a broad subset of the most commonly used PyTorch operators.
 
 - **Advanced Optimization Framework**  
   Build an optimization module inspired by the design of `torch.optim`, with full support for higher-order gradients and flexible optimizer composition.
