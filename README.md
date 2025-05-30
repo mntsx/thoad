@@ -3,18 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT) <!-- [![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/) [![PyPi downloads](https://img.shields.io/pypi/dt/thoad.svg?label=downloads&color=blue)](https://pypi.org/project/thoad/) -->
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python)
 [![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch)
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
-<!-- *academic references* -->
-
-<!--
-TODO: Add academic papers references (my future publication on this topic, google's paper & jaime's paper)
-1. Create a repository: mntsx/badge-icons to have guaranteed academic magazine icons
-2. Use https://badgen.net/help#generators to generate the badges:
-    - academic magazine icon in the left
-    - publication name in the right
-    - link to the publication
--->
+[![black](https://img.shields.io/badge/code%20style-black-202020.svg?style=flat)](https://github.com/psf/black)
 
 <br>
 
