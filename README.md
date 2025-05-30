@@ -1,9 +1,18 @@
 # PyTorch High Order AutoDifferentiator (thoad)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT) <!-- [![PyPI version](https://img.shields.io/pypi/v/thoad.svg?color=blue)](https://pypi.org/project/thoad/) [![PyPI total downloads](https://img.shields.io/pypi/dt/thoad.svg?color=blue)](https://pypi.org/project/thoad/) -->
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-yellow.svg)](https://github.com/python)
 [![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+<!--
+TODO: Add academic papers references (my future publication on this topic, google's paper & jaime's paper)
+1. Create a repository: mntsx/badge-icons to have guaranteed academic magazine icons
+2. Use https://badgen.net/help#generators to generate the badges:
+    - academic magazine icon in the left
+    - publication name in the right
+    - link to the publication
+-->
 
 <br>
 
