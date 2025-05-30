@@ -5,6 +5,8 @@
 [![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+<!-- *academic references* -->
+
 <!--
 TODO: Add academic papers references (my future publication on this topic, google's paper & jaime's paper)
 1. Create a repository: mntsx/badge-icons to have guaranteed academic magazine icons
