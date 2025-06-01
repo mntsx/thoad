@@ -8,7 +8,7 @@
 <br>
 
 > \[!NOTE]
-> This package is still in experimental stage. It may exhibit unstable behavior or produce unexpected results, and is subject to possible minor structural modifications in the future.
+> This package is still in an experimental stage. It may exhibit unstable behavior or produce unexpected results, and is subject to possible minor structural modifications in the future.
 
 <br>
 
