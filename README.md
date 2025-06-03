@@ -12,11 +12,11 @@
 
 <br>
 
-## Introduction
+# Introduction
 
 **thoad** is a lightweight autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
 
-### Key Features
+## Key Features
 
 - **Python 3.12+**: the package is developed using Python version 3.12 or higher.
 - **Built on PyTorch**: the package uses PyTorch as its only dependency. It is **compatible with +50 PyTorch operator backwards**.
@@ -26,7 +26,7 @@
 - **Support for Backward Hooks**: the package allows registering backward hooks for dynamic tuning of propagated high-order gradients.
 - **Memory Optimization**: the package detects and avoids duplication of canonical tensor dimensions during back-propagation.
 
-### Installation
+## Installation
 
 **thoad** can be installed either from PyPI or directly from the GitHub repository.
 
@@ -54,9 +54,16 @@
 
 <br>
 
-## Usage Notes
+# Using the Package
 
-### **`thoad.backward(...)` function**
+<!-- Explain that **thoad** offers 2 user interfaces,
+  the torch.barckward(...) function: torch.Tensor.backward like,  more limited
+  the torch.Operator class: package original class interface that enables the use of some extra functionalities of the package
+-->
+
+## **`thoad.backward`**
+
+<!-- description of thoad.backward arguments -->
 
 ```python
 import torch
@@ -66,11 +73,11 @@ from torch.nn import functional as F
 ### Normal PyTorch workflow
 T0 = torch.rand(size=(10,15), requires_grad=True)
 T1 = torch.rand(size=(15,20), requires_grad=True)
-T2 = F.scaled_dot_product_attention(query=T0, key=T1.T, value=T1.T)
+output = F.scaled_dot_product_attention(query=T0, key=T1.T, value=T1.T)
 
 ### Call thoad backward
 order = 2
-thoad.backward(tensor=T2, order=order)
+thoad.backward(tensor=output, order=order)
 
 ### Checks
 # check derivative shapes
@@ -89,8 +96,11 @@ assert torch.allclose(T0_grad.flatten(), T0.hgrad[1].sum(0).flatten())
 assert torch.allclose(T1_grad.flatten(), T1.hgrad[1].sum(0).flatten())
 ```
 
-### **`thoad.Operactor` class**
+## **`thoad.Operator`**
 
+<!-- description of thoad.Operator arguments and methods -->
+
+### Executing Autodifferentiation
 ```python
 import torch
 import thoad
@@ -99,33 +109,85 @@ from torch.nn import functional as F
 ### Normal PyTorch workflow
 T0 = torch.rand(size=(10,15), requires_grad=True)
 T1 = torch.rand(size=(15,20), requires_grad=True)
-T2 = F.scaled_dot_product_attention(query=T0, key=T1.T, value=T1.T)
+output = F.scaled_dot_product_attention(query=T0, key=T1.T, value=T1.T)
 
 ### Instantiate thoad Operator and call backward
 order = 2
-operator = thoad.Operator(tensor=T2, order=order)
-thoad.backward(tensor=T2, order=order)
-
-# CHECKS
-# ... (Same as for thoad backward)
+operator = thoad.Operator(tensor=output)
+operator.backward(order=order)
 ```
 
+The operator of a tensor subgraph can also be obtained as the return of `thoad.backward`
+
 ```python
+operator = thoad.backward(tensor=output, order=order)
+```
+
+### Fetching Partial derivatives
+
+The `fetch_hgrad` method can be used to obtain partial derivatives - including crossed ones.
+
+```python
+operator = thoad.backward(tensor=output, order=order)
+
+### Fetch Partial Derivatives
 # fetch T0 and T1 2nd order derivatives
-T2_T0T0 = operator.fetch_hgrad(variables=(T0, T0))
-T2_T1T1 = operator.fetch_hgrad(variables=(T1, T1))
-assert T2_T0T0 == T0.hgrad[1]
-assert T2_T1T1 == T1.hgrad[1]
+output_T0T0 = operator.fetch_hgrad(variables=(T0, T0))
+output_T1T1 = operator.fetch_hgrad(variables=(T1, T1))
+assert output_T0T0 == T0.hgrad[1]
+assert output_T1T1 == T1.hgrad[1]
 # fetch cross derivatives
-T2_T0T1 = operator.fetch_hgrad(variables=(T0, T1))
-T2_T1T0 = operator.fetch_hgrad(variables=(T1, T0))
+output_T0T1 = operator.fetch_hgrad(variables=(T0, T1))
+output_T1T0 = operator.fetch_hgrad(variables=(T1, T0))
 ```
 
-```python
-operator.compatible  # True
-```
+The `fetch_shapes` method can be used to obtain information about derivative shapes and batch optimizations.
 
 ```python
+operator = thoad.backward(tensor=output, order=order)
+
+### Fetch Shapes and Batch Info
+T0T0_shapes, T0T0_batch = operator.fetch_shape(variables=(T0, T0))
+T0T1_shapes, T0T1_batch = operator.fetch_shape(variables=(T0, T1))
+T1T0_shapes, T1T0_batch = operator.fetch_shape(variables=(T1, T0))
+T1T1_shapes, T1T1_batch = operator.fetch_shape(variables=(T1, T1))
+
+### Posible Checks
+# shape checks
+assert T0T0_shapes == (T0.shape, T0.shape)
+assert T0T1_shapes == (T0.shape, T1.shape)
+assert T1T0_shapes == (T1.shape, T0.shape)
+assert T1T1_shapes == (T1.shape, T1.shape)
+# batch checks (no batch optimizations if backward call has batch=False)
+assert all([all([batch is None for batch in batches]) for batches in T0T0_shapes])
+assert all([all([batch is None for batch in batches]) for batches in T0T1_shapes])
+assert all([all([batch is None for batch in batches]) for batches in T1T0_shapes])
+assert all([all([batch is None for batch in batches]) for batches in T1T1_shapes])
+```
+
+> \[!NOTE]
+> batch optimization information will be relevant when backward is executed with `batch=True`, as it is the only information indicating which dim unifications are set in place and how to undo them.
+
+### **Interacting with backpropagation process**
+
+<!-- add example of how to activate an intermediate tensor gradient retention -->
+<!-- add example of how to insert custom derivatives -->
+<!-- add example of how to set up hook (dont do this for now; instead, leave the comment as it is) -->
+
+
+### **Checking Graph Compatibility**
+
+The `compatible` attribute indicates whether the tensor subgraph is supported by thoad. That is, cheks if the package provides high order implementations for all the bacwkard functions linking the tensor with the computational graph leafs.
+
+```python
+operator = thoad.Operator(tensor=output)
+assert operator.compatible
+```
+
+The `display_grad` method can also be useful for the purpose of cheking compatibility. This tool provides the user with a detailed breakdown of the compatibility status of each backward function in the subgraph. Any not supported function will be labeled as `(not supported)` in the display.
+
+```python
+operator = thoad.Operator(tensor=output)
 operator.display_graph()
 ```
 
@@ -143,9 +205,17 @@ operator.display_graph()
   └─·join: (<AccumulateGrad object at 0x000001E0CC936C20>)
 ```
 
+> \[!NOTE]
+> **thoad** includes implementations of high-order backward functions for +50 PyTorch operators. However, since many PyTorch operators perform gradient backpropagation by composing the backward functions of simpler operators, the total number of supported operators is significantly higher.
+
+
 <br>
 
+# More About the Package
+
 ## Future Plans
+
+The following outlines the planned future developments and improvements for thoad:
   
 - **Extend Backward Functionality**  
   Develop further backprop capabilities to improve PyTorch integration supporting a broad subset of the most commonly used operators.
@@ -154,8 +224,6 @@ operator.display_graph()
   Build an optimization module inspired by the design of `torch.optim`, with full support for higher-order gradients and flexible optimizer composition.
 
 
-<br>
-
 ## License
 
 **This project** is licensed under the [MIT License](https://opensource.org/licenses/MIT).  
@@ -163,8 +231,6 @@ See the [LICENSE](LICENSE) file for details.
 
 **PyTorch** is distributed under the [BSD 3-Clause License](https://opensource.org/license/BSD-3-Clause).  
 See PyTorch’s own [LICENSE](https://github.com/pytorch/pytorch/blob/main/LICENSE) file for its full terms.
-
-<br>
 
 ## How to cite thoad
 
