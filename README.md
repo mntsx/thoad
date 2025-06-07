@@ -242,25 +242,25 @@ operator = thoad.backward(tensor=output, order=order)
 
 ### Fetch Partial Derivatives
 # fetch T0 and T1 2nd order derivatives
-output_T0T0 = operator.fetch_hgrad(variables=(T0, T0))
-output_T1T1 = operator.fetch_hgrad(variables=(T1, T1))
+output_T0T0, _, _ = operator.fetch_hgrad(variables=(T0, T0))
+output_T1T1, _, _ = operator.fetch_hgrad(variables=(T1, T1))
 assert output_T0T0 == T0.hgrad[1]
 assert output_T1T1 == T1.hgrad[1]
 # fetch cross derivatives
-output_T0T1 = operator.fetch_hgrad(variables=(T0, T1))
-output_T1T0 = operator.fetch_hgrad(variables=(T1, T0))
+output_T0T1, _, _ = operator.fetch_hgrad(variables=(T0, T1))
+output_T1T0, _, _ = operator.fetch_hgrad(variables=(T1, T0))
 ```
 
-The `fetch_shapes` method can be used to obtain information about derivative shapes and batch optimizations.
+The `fetch_hgrad` method can also be used to obtain information about derivative shapes and batch optimizations.
 
 ```python
 operator = thoad.backward(tensor=output, order=order)
 
 ### Fetch Shapes and Batch Info
-T0T0_shapes, T0T0_batch = operator.fetch_shape(variables=(T0, T0))
-T0T1_shapes, T0T1_batch = operator.fetch_shape(variables=(T0, T1))
-T1T0_shapes, T1T0_batch = operator.fetch_shape(variables=(T1, T0))
-T1T1_shapes, T1T1_batch = operator.fetch_shape(variables=(T1, T1))
+_, T0T0_shapes, T0T0_batch = operator.fetch_hgrad(variables=(T0, T0))
+_, T0T1_shapes, T0T1_batch = operator.fetch_hgrad(variables=(T0, T1))
+_, T1T0_shapes, T1T0_batch = operator.fetch_hgrad(variables=(T1, T0))
+_, T1T1_shapes, T1T1_batch = operator.fetch_hgrad(variables=(T1, T1))
 
 ### Posible Checks
 # shape checks
