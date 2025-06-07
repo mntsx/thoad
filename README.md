@@ -142,69 +142,75 @@ assert torch.allclose(T1_grad.flatten(), T1.hgrad[1].sum(0).flatten())
 
 ## **`thoad.Operator`**
 
-<!-- description of thoad.Operator arguments and methods -->
-
-The `Operator` class wraps a tensor’s backward subgraph and provides methods to customize and inspect the high-order differentiation process. It performs the same core gradient computation as `thoad.backward` but additionally exposes hooks, partial fetching, shape inspection, and override capabilities.
+The `Operator` class wraps a tensor’s backward subgraph in an operator object, performing the same core high-order backward pass as `thoad.backward` while exposing advanced customization, inspection, and override capabilities.
 
 ### Instantiation
+
+Use the constructor to create an operator for any tensor requiring gradients:
 
 ```python
 operator = thoad.Operator(tensor=output)
 ```
 
-- **`tensor`**: A PyTorch tensor that must require gradients (i.e., `requires_grad=True`) and be part of a differentiable computation graph.
+* **`tensor`**: A PyTorch `Tensor` with `requires_grad=True` and a non-`None` `grad_fn`.
 
 ### Properties
 
-- **`.tensor → Tensor`**
-  Holds the output tensor associated with this operator
+* **`.tensor → Tensor`**
+  The output tensor underlying this operator.
+  **Setter**: Replaces the tensor (after validation), rebuilds the internal computation graph, and invalidates any previously computed gradients.
 
-- **`.compatible → bool`**
-  Indicates whether every backward function in the tensor’s subgraph is supported by thoad’s high-order implementations.
+* **`.compatible → bool`**
+  Indicates whether every backward function in the tensor’s subgraph has a supported high-order implementation. If **`False`**, some derivatives may fall back or be unavailable.
 
-  * Returns `True` if all functions have corresponding high-order extensions.
-  * Returns `False` if at least one function is unsupported (in which case some derivatives may fall back or be unavailable).
+* **`.index → Dict[Type[torch.autograd.Function], Type[ExtendedAutogradFunction]]`**
+  A mapping from base PyTorch `autograd.Function` classes to thoad’s `ExtendedAutogradFunction` implementations.
+  **Setter**: Validates and injects your custom high-order extensions.
 
-- **`.index → Dict[Type[torch.autograd.Function], Type[ExtendedAutogradFunction]]`**
-  A mapping from base PyTorch `autograd.Function` types to thoad’s high-order `ExtendedAutogradFunction` classes. Users can inspect this mapping or replace entries to override high-order implementations for specific backward functions.
+### Core Methods
 
-### Setters
+#### **`.backward(order, crossings=False, groups=None, batch=False) → None`**
 
-- **`.tensor = Tensor`**
-  Replaces the operator’s underlying tensor. This rebuilds the graph and invalidates any previously computed gradients.
+Performs the high-order backward pass up to the specified derivative `order`, storing all computed partials in each leaf tensor’s `.hgrad` attribute.
 
-- **`.index = Dict[...]`**
-  Replaces the default translation mapping with a user-provided dictionary. Keys must be subclasses of `torch.autograd.Function`, and values must be subclasses of `ExtendedAutogradFunction`. This allows injecting custom high-order implementations for specific operators.
+* **`order`** (`int > 0`): Maximum derivative order.
+* **`crossings`** (`bool`, default `False`): If `True`, mixed partial derivatives across different leaf tensors will be computed.
+* **`groups`** (`Optional[Iterable[Iterable[Tensor]]]`, default `None`): When `crossings=True`, restricts mixed partials to those whose leaf tensors all lie within a single group.
+* **`batch`** (`bool`, default `False`): Controls how output dimensions are treated (flattened vs. batched).
 
-### Other Methods
+#### **`.display_graph() → None`**
 
-#### `.backward(order, crossings=False, groups=None, batch=False)`
+Prints a tree representation of the tensor’s backward subgraph. Supported nodes are shown normally; unsupported ones are annotated with `(not supported)`.
 
-Does the same as `thoad.backward`, computing high-order partials up to `order` with the given flags. All computed gradients are stored in each leaf tensor’s `.hgrad` field.
+#### **`.register_backward_hook(variables, hook) → None`**
 
-#### `.display_graph()`
+Registers a user-provided `hook` to run during the backward pass whenever gradients for any of the specified leaf `variables` are computed.
 
-Prints a tree of the tensor’s backward subgraph. Each node corresponds to a PyTorch backward function; unsupported nodes are annotated with `(not supported)`.
+* **`variables`** (`Sequence[Tensor]`): Leaf tensors to monitor.
+* **`hook`** (`Callable[[EDData, context], EDData]`): Receives the current `(Tensor, shapes, indeps)` plus contextual info and must return a modified `(Tensor, shapes, indeps)`.
 
-#### `.register_backward_hook(variables: Sequence[Tensor], hook: Hook) → None`
+#### **`.require_grad_(variables) → None`**
 
-Registers a custom hook to be executed during the high-order backward pass. Each time gradients for any tensor in `variables` are computed, `hook` will receive the incoming gradient and can return a modified gradient.
+Marks the given leaf `variables` so that all intermediate partials involving them are retained, even if not required for the final requested gradients. Useful for inspecting or re-using higher-order intermediates.
 
-#### `.require_grad_(variables: Sequence[Tensor]) → None`
+#### **`.fetch_hgrad(variables) → Tuple[Tensor, Tuple[Indep, …], Tuple[Shape, …]]`**
 
-Marks a subset of leaf tensors for which intermediate partial derivatives should be retained during backpropagation. By default, thoad discards intermediate partials that are not needed to build the final requested gradients. Calling this method ensures that all partials associated with the specified tensors are stored, allowing access to intermediate quantities or higher-order partials beyond what is directly fetched.
+Retrieves the precomputed high-order partial corresponding to the ordered sequence of leaf `variables`. Returns a triple:
 
-#### `.fetch_hgrad(variables: Sequence[Tensor]) → Tensor`
+1. **Gradient tensor**: The computed partial derivatives, shaped according to output and input dimensions.
+   
+2. **Shape info** (`Shape` tuple per variable): The original shape of each leaf tensor, clarifying how many elements were used to form each derivative axis.
 
-Returns a single tensor containing the precomputed high-order partial derivative corresponding to the ordered combination of leaf tensors specified in `variables`.
+   * Each entry is a tuple matching the variable’s original `tensor.shape`.
+   * These shapes help interpret how the flattened or batched gradient tensor maps back to the multi-dimensional layout of each variable.
+     
+3. **Independent‐dimension info** (`Indep` tuple per variable): For each variable, specifies which original output axes remained as independent (batch) dimensions versus which were distributed (absorbed) into the derivative axes.
 
-#### `.fetch_shape(variables: Sequence[Tensor]) → Tuple[Tuple[Shape, …], Tuple[Indep, …]]`
+   * A value of `None` for an axis means that output dimension stayed separate and appears as a batch axis in the returned tensor.
+   * A non-`None` integer `k` indicates that the corresponding output axis was merged into the `k`‑th derivative dimension, effectively expanding that dimension by the size of the output along that axis.
+   * This mechanism lets you trace how each output dimension contributes to the shape of the high-order gradient: independent axes remain visible, while merged axes grow derivative dimensions.
 
-Returns two parallel tuples for each pair of leaf tensors in `variables`:
-
-1. **Shape info (Shape)**: Provides the original shape of each leaf tensor in the pair, clarifying how many elements were used to form each partial dimension.
-
-2. **Independent‐dimension info (Indep)**: Indicates, for each pair, which output axes were treated as independent (kept as batch dimensions) versus distributed into derivative dimensions. A value of `None` means that the corresponding output axis remained independent (a batch dimension). A positive integer indicates the axis was distributed into that position among the partial dimensions.
+Use the combination of independent‐dimension and shape info to reshape or interpret the returned gradient tensor in your own workflow.
 
 ---
 
@@ -235,7 +241,7 @@ operator = thoad.backward(tensor=output, order=order)
 
 ### Fetching Partial derivatives
 
-The `fetch_hgrad` method can be used to obtain partial derivatives - including crossed ones.
+The `fetch_hgrad` method can be used to obtain partial derivatives, including crossed ones.
 
 ```python
 operator = thoad.backward(tensor=output, order=order)
@@ -280,12 +286,105 @@ assert all([all([batch is None for batch in batches]) for batches in T1T1_shapes
 
 ---
 
-### **Interacting with backpropagation process**
+### **Adding a Backward Hooks**
 
-<!-- add example of how to insert custom derivatives -->
-<!-- add example of how to set up hook (dont do this for now; instead, leave the comment as it is) -->
+The `register_backward_hook` method allows registration of gradient modifications in a way comparable to what PyTorch offers for its operators. It is important to keep in mind that, due to technical differences related to the implementation of higher-order derivative compositions, thoad modifies the accumulated gradients of the tensor variable rather than the outgoing gradients of the operator. In other words, variables consumed by multiple operators will not allow independent modification of the gradients accumulated in the sum, but only of the total gradient.
 
-*Examples for this section are not created yet*
+
+```python
+# define a hook that scales gradients by 2
+def my_hook(
+    grad_data: Tuple[Tensor, Tuple[Shape, ...], Tuple[Indep, ...]],
+    context: list[dict[str, Any]],
+    ) -> Tuple[Tensor, Tuple[Shape, ...], Tuple[Indep, ...]]:
+    grad, shapes, indeps = grad_data
+    modified_grad = grad * 2
+    return (modified_grad, shapes, indeps)
+
+# register the hook on leaf tensor T0
+operator.register_backward_hook(
+    variables=[T0],
+    hook=my_hook
+)
+
+# compute 2nd-order derivatives with the hook applied
+operator.backward(order=2)
+```
+
+---
+
+### **Modifying the Index Mapping**
+
+thoad uses the internal class `FunctionTranscoder` to replace the backward functions in PyTorch’s computation graph with higher-order–extended backward functions. Additionally, via the operator’s `index` property, it allows you to replace or append backward functions.
+
+```python
+# prepare a sample tensor
+T0 = torch.rand(5, requires_grad=True)
+
+gfn_type = type(torch.relu(T0).grad_fn)
+# copy and update the index mapping
+new_index = operator.index.copy()
+new_index[gfn_type] = TestUnivariableXBackward
+operator.index = new_index
+
+# subsequent backward calls use TestUnivariableXBackward for ReLU
+operator.backward(order=1)
+```
+
+To properly develop an extended backward function—which is actually implemented as a class—you must inherit from one of the two base classes that Thoad provides:
+
+1. **`DirectFunction`**: designed for applying transformations directly to the external differential
+2. **`ContractiveFunction`**: designed for constructing an internal-differential notation and an Einstein summation notation, with which to compose the external differential.
+
+
+```python
+class ExampleXBackward(ContractiveFunction):
+    """
+    A minimal ExtendedAutogradFunction that returns all-ones differential
+    """
+
+    def __init__(
+        self,
+        grad_fn: torch.autograd.Function,
+        order: int,
+        dtype: torch.dtype,
+        device: torch.device
+        ) -> None:
+        super().__init__(grad_fn=grad_fn, order=order, dtype=dtype, device=device)
+        return None
+
+    def check_shape(self, shape: Shape, indep: Indep) -> Tuple[Shape, Indep]:
+        self._shape, self._indep = shape, indep
+        return (shape, indep)
+
+    def _extract_context(self) -> dict[str, Any]:
+        return dict()
+
+    def _process_context(self) -> dict[str, Any]:
+        assert self._shape is not None
+        assert self._indep is not None
+        assert self._context is not None
+        return dict()
+
+    def compute_internal(self, out_id: int, in_id: Tuple[int, ...]) -> IDData:
+        match (out_id, in_id):
+            case (0, (0,)):
+                differential: Tensor = torch.ones(size=self._shape)
+                einstein_external = list(range(len(self._shape)))
+                einstein_internal = list(range(len(self._shape)))
+                einstein_input = [einstein_external, einstein_internal]
+                einstein_composed = list(range(len(self._shape)))
+                einstein_notation = [einstein_input, [einstein_composed]]
+            case _:
+                (differential, einstein_notation) = (None, None)
+        return (differential, einstein_notation)
+```
+
+
+<!--
+> \[!NOTE]
+> For more on writing and interpreting the Einstein summation (einsum) notation used by custom backward functions, see the guide in the repository's GitHub Wiki.
+-->
 
 ---
 
