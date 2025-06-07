@@ -335,7 +335,7 @@ thoad uses the internal class `FunctionTranscoder` to replace the backward funct
 operator = thoad.backward(tensor=GO, order=order)
 
 ### Modify Function Index
-# dummy code to get the grad_fn type wanted to substitute
+# dummy code to get an instance of the grad_fn whose type is to be substituted
 grad_fn = torch.relu(torch.rand(size=(1,), requires_grad=True).grad_fn
 # update the index map
 operator.index[type(grad_fn] = custom_extended_backward_fn
