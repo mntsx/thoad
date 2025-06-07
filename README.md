@@ -370,11 +370,8 @@ class ExampleXBackward(ContractiveFunction):
         match (out_id, in_id):
             case (0, (0,)):
                 differential: Tensor = torch.ones(size=self._shape)
-                einstein_external = list(range(len(self._shape)))
-                einstein_internal = list(range(len(self._shape)))
-                einstein_input = [einstein_external, einstein_internal]
-                einstein_composed = list(range(len(self._shape)))
-                einstein_notation = [einstein_input, [einstein_composed]]
+                shape_range = list(range(len(self._shape)))
+                einstein_notation = [[shape_range, shape_range], [shape_range]]
             case _:
                 (differential, einstein_notation) = (None, None)
         return (differential, einstein_notation)
