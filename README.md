@@ -338,7 +338,7 @@ operator = thoad.backward(tensor=GO, order=order)
 # dummy code to get an instance of the grad_fn whose type is to be substituted
 grad_fn = torch.relu(torch.rand(size=(1,), requires_grad=True).grad_fn
 # update the index map
-operator.index[type(grad_fn] = custom_extended_backward_fn
+operator.index[type(grad_fn)] = custom_extended_backward_fn
 ```
 
 To properly develop an extended backward function—which is actually implemented as a class—you must inherit from one of the two base classes that Thoad provides:
