@@ -26,6 +26,8 @@
 - **Support for Backward Hooks**: the package allows registering backward hooks for dynamic tuning of propagated high-order gradients.
 - **Memory Optimization**: the package detects and avoids duplication of canonical tensor dimensions during back-propagation.
 
+<!--
+
 ## Installation
 
 **thoad** can be installed either from PyPI or directly from the GitHub repository.
@@ -50,7 +52,8 @@
   cd thoad
   pip install -e .
   ```
-
+  
+-->
 
 <br>
 
@@ -76,7 +79,7 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 - **`tensor`**: A PyTorch tensor from which to start the backward pass. This tensor must require gradients and be part of a differentiable graph.
 - **`order`**: A positive integer specifying the maximum order of derivatives to compute. For example, `order=1` computes first-order gradients; `order=2` computes up to second-order gradients, and so on.
 - **`crossings`**: A boolean flag (default=`False`). If set to `True`, mixed partial derivatives (i.e., derivatives that involve more than one distinct leaf tensor) will be computed.
-- **`groups`**: An optional iterable of disjoint groups of leaf tensors. When `crossings=True`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=False`, this argument is ignored.
+* **`groups`**: An optional iterable of disjoint groups of leaf tensors. When `crossings=False`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True`, a *ValueError* will be raised.
 - **`batch`:** A boolean flag (default=False) that controls how output dimensions are organized in the computed gradients.
 
   - **When `batch=False`:**
