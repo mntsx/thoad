@@ -367,6 +367,7 @@ class ExampleXBackward(ContractiveFunction):
         return dict()
 
     def compute_internal(self, out_id: int, in_id: Tuple[int, ...]) -> IDData:
+        context = self._process_context()
         match (out_id, in_id):
             case (0, (0,)):
                 differential: Tensor = torch.ones(size=self._shape)
