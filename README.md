@@ -332,7 +332,7 @@ operator.register_backward_hook(
 thoad uses the internal class `FunctionTranscoder` to replace the backward functions in PyTorch’s computation graph with higher-order–extended backward functions. Additionally, via the operator’s `index` property, it allows you to replace or append backward functions.
 
 ```python
-GO = torch.nn.funtional.softmax(input=T2, dim=1)
+operator = thoad.backward(tensor=GO, order=order)
 
 ### Modify Function Index
 # dummy code to get the grad_fn type wanted to substitute
