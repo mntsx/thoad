@@ -126,7 +126,7 @@ thoad.backward(tensor=GO, order=order)
 
 ### Checks
 # check derivative shapes
-for o in range(1, order):
+for o in range(1, 1 + order):
     assert T0.hgrad[o - 1].shape == (T2.numel(), o * (T0.numel()))
     assert T1.hgrad[o - 1].shape == (T2.numel(), o * (T1.numel()))
 # check first derivatives
