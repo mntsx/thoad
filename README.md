@@ -59,11 +59,6 @@
 
 # Using the Package
 
-<!-- Explain that **thoad** offers 2 user interfaces,
-  the torch.barckward(...) function: torch.Tensor.backward like,  more limited
-  the torch.Operator class: package original class interface that enables the use of some extra functionalities of the package
--->
-
 **thoad** exposes two primary interfaces for computing high-order derivatives:
 1. **`thoad.backward`**: a function-based interface that closely resembles `torch.Tensor.backward`. It provides a quick way to compute high-order gradients without needing to manage an explicit operator object, but it offers only the core functionality (derivative computation and storage).
 2. **`thoad.Operator`**: a class-based interface that wraps the output tensor’s subgraph in an operator object. In addition to performing the same high-order backward pass, it gives access to advanced features such as fetching specific mixed partials, inspecting batch-dimension optimizations, overriding backward-function implementations, retaining intermediate partials, and registering custom hooks.
@@ -197,7 +192,7 @@ Registers a user-provided `hook` to run during the backward pass whenever gradie
 Marks the given leaf `variables` so that all intermediate partials involving them are retained, even if not required for the final requested gradients. Useful for inspecting or re-using higher-order intermediates.
 
 
-#### **`.fetch_hgrad(variables: Sequence[Tensor], batch: Optional[bool] = False) → Tuple[Tensor, Tuple[Shape, …], Tuple[Indep, …]]`**
+#### **`.fetch_hgrad(variables: Sequence[Tensor], batch: Optional[bool] = False) → Tuple[Tensor, Tuple[Shape, ...], Tuple[Indep, ...]]`**
 
 Retrieves the precomputed high-order partial corresponding to the ordered sequence of leaf `variables`.
 
