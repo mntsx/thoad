@@ -449,7 +449,7 @@ The following outlines the planned future developments and improvements for thoa
 - **PyTorch Integration**  
   It would be exciting to eventually fully-integrate the package into the PyTorch framework, although it's unlikely, since ensuring its coordinated stability would require modifications to the mentioned library. Specifically:
     - Providing it with a more comprehensive tool for accessing operators' contextual information.
-    - Improving the accessibility the type signatures of the backward functions.
+    - Improving the accessibility to the type signatures of the backward functions.
 
 
 ## License
