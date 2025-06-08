@@ -367,22 +367,24 @@ class ExampleXBackward(ContractiveFunction):
         self._shape, self._indep = shape, indep
         return (shape, indep)
 
-    def _extract_context(self) -> dict[str, Any]:
-        return dict()
+    def _extract_context(self) -> None:
+        self._context = dict()
+        return None
 
-    def _process_context(self) -> dict[str, Any]:
+    def _process_context(self) -> None:
         assert self._shape is not None
         assert self._indep is not None
         assert self._context is not None
-        return dict()
+        self._processed_context = dict()
+        return None
 
     def compute_internal(self, out_id: int, in_id: Tuple[int, ...]) -> IDData:
-        context = self._process_context()
+        self._process_context()
         match (out_id, in_id):
             case (0, (0,)):
                 differential: Tensor = torch.ones(size=self._shape)
                 shape_range = list(range(len(self._shape)))
-                einstein_notation = [[shape_range, shape_range], [shape_range]]
+                einstein_notation = [[shape_range, shape_range], [shape_range], [self._shape]]
             case _:
                 (differential, einstein_notation) = (None, None)
         return (differential, einstein_notation)
