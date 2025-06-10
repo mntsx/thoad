@@ -341,7 +341,7 @@ grad_fn = torch.relu(torch.rand(size=(1,), requires_grad=True).grad_fn
 operator.index[type(grad_fn)] = custom_extended_backward_fn
 ```
 
-To properly develop an extended backward function—which is actually implemented as a class—you must inherit from one of the two base classes that Thoad provides:
+To properly develop an extended backward function - which is actually implemented as a class - you must inherit from one of the two base classes that Thoad provides:
 
 1. **`DirectFunction`**: designed for applying transformations directly to the external differential
 2. **`ContractiveFunction`**: designed for constructing an internal-differential notation and an Einstein summation notation, with which to compose the external differential.
@@ -352,16 +352,6 @@ class ExampleXBackward(ContractiveFunction):
     """
     A minimal ExtendedAutogradFunction that returns all-ones differential
     """
-
-    def __init__(
-        self,
-        grad_fn: torch.autograd.Function,
-        order: int,
-        dtype: torch.dtype,
-        device: torch.device
-        ) -> None:
-        super().__init__(grad_fn=grad_fn, order=order, dtype=dtype, device=device)
-        return None
 
     def check_shape(self, shape: Shape, indep: Indep) -> Tuple[Shape, Indep]:
         self._shape, self._indep = shape, indep
