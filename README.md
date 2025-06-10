@@ -343,7 +343,7 @@ operator.index[type(grad_fn)] = custom_extended_backward_fn
 
 To properly develop an extended backward function - which is actually implemented as a class - you must inherit from one of the two base classes that Thoad provides:
 
-1. **`DirectFunction`**: designed for applying transformations directly to the external differential
+1. **`DirectFunction`**: designed for applying transformations directly to the external differential *(Still not fully supported)*
 2. **`ContractiveFunction`**: designed for constructing an internal-differential notation and an Einstein summation notation, with which to compose the external differential.
 
 
