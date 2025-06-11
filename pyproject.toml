@@ -7,8 +7,15 @@ authors = [
     { name = "Miguel Montes Lorenzo", email = "112613446+MiguelMontesLorenzo@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "torch>=2.7.1",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+]

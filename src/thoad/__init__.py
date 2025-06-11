@@ -1,2 +1,1 @@
-def hello() -> str:
-    return "Hello from thoad!"
+from thoad.user.interface import Operator, backward

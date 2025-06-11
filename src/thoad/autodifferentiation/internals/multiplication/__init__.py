@@ -1,0 +1,3 @@
+from thoad.autodifferentiation.internals.multiplication.div import DivXBackward0
+from thoad.autodifferentiation.internals.multiplication.mul import MulXBackward0
+from thoad.autodifferentiation.internals.multiplication.prod import ProdXBackward0
