@@ -348,7 +348,7 @@ To properly develop an extended backward function - which is actually implemente
 
 
 ```python
-from thoad.typing import Shape, Indep
+from thoad.typing import Shape, Indep, IDData
 from thoad.autodifferentiation import ContractiveFunction
 
 class ExampleXBackward(ContractiveFunction):
