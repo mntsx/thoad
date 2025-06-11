@@ -327,7 +327,7 @@ operator.register_backward_hook(
 
 ---
 
-### **Modifying the Index Mapping**
+### **Modifying the Function Index**
 
 thoad uses the internal class `FunctionTranscoder` to replace the backward functions in PyTorch’s computation graph with higher-order–extended backward functions. Additionally, via the operator’s `index` property, it allows you to replace or append backward functions.
 
