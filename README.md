@@ -348,13 +348,15 @@ To properly develop an extended backward function - which is actually implemente
 
 
 ```python
+from thoad.autodifferentiation import ContractiveFunction
+
 class ExampleXBackward(ContractiveFunction):
     """
     A minimal ExtendedAutogradFunction that returns all-ones differential
     """
 
     def check_shape(self, shape: Shape, indep: Indep) -> Tuple[Shape, Indep]:
-        self._shape, self._indep = shape, indep
+        self._shape = shape
         return (shape, indep)
 
     def _extract_context(self) -> None:
@@ -363,7 +365,6 @@ class ExampleXBackward(ContractiveFunction):
 
     def _process_context(self) -> None:
         assert self._shape is not None
-        assert self._indep is not None
         assert self._context is not None
         self._processed_context = dict()
         return None
