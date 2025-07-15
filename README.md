@@ -1,9 +1,9 @@
 <!-- # PyTorch High Order AutoDifferentiator (thoad) -->
 <!-- # $\textsf{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{\color{#EE4C2C}A}{uto}{\color{#EE4C2C}D}{ifferentiation}}$ -->
-# $\text{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{\color{#EE4C2C}R}{everse-Mode }{\color{#EE4C2C}A}{uto-Differentiation}}$ 
+# $\text{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{\color{#EE4C2C}A}{uto-}{\color{#EE4C2C}D}{ifferentiation}}$ 
 <!-- # $\textsf{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{\color{#EE4C2C}R}{everse-Mode }{\color{#EE4C2C}A}{uto-Differentiation}}$ -->
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT) <!-- [![PyPi version](https://img.shields.io/pypi/v/thora.svg?label=PyPi&color=blue)](https://pypi.org/project/thora/) [![PyPi downloads](https://img.shields.io/pypi/dt/thora.svg?label=downloads&color=blue)](https://pypi.org/project/thora/) -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT) <!-- [![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/) [![PyPi downloads](https://img.shields.io/pypi/dt/thoad.svg?label=downloads&color=blue)](https://pypi.org/project/thoad/) -->
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python/cpython)
 [![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch/pytorch)
 [![black](https://img.shields.io/badge/code%20style-black-202020.svg?style=flat)](https://github.com/psf/black)
@@ -17,7 +17,7 @@
 
 # Introduction
 
-**thora** is a lightweight reverse-mode autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thora** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
+**thoad** is a lightweight reverse-mode autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
 
 ## Key Features
 
@@ -33,26 +33,26 @@
 
 ## Installation
 
-**thora** can be installed either from PyPI or directly from the GitHub repository.
+**thoad** can be installed either from PyPI or directly from the GitHub repository.
 
 * **From PyPI**
 
   ```bash
-  pip install thora
+  pip install thoad
   ```
 
 * **From GitHub**
   Install directly with `pip` (fetches the latest from the `main` branch):
 
   ```bash
-  pip install git+https://github.com/yourusername/thora.git
+  pip install git+https://github.com/yourusername/thoad.git
   ```
 
   Or, if you prefer to clone and install in editable mode:
 
   ```bash
-  git clone https://github.com/yourusername/thora.git
-  cd thora
+  git clone https://github.com/yourusername/thoad.git
+  cd thoad
   pip install -e .
   ```
   
@@ -62,15 +62,15 @@
 
 # Using the Package
 
-**thora** exposes two primary interfaces for computing high-order derivatives:
-1. **`thora.backward`**: a function-based interface that closely resembles `torch.Tensor.backward`. It provides a quick way to compute high-order gradients without needing to manage an explicit controller object, but it offers only the core functionality (derivative computation and storage).
-2. **`thora.controller`**: a class-based interface that wraps the output tensor’s subgraph in an controller object. In addition to performing the same high-order backward pass, it gives access to advanced features such as fetching specific mixed partials, inspecting batch-dimension optimizations, overriding backward-function implementations, retaining intermediate partials, and registering custom hooks.
+**thoad** exposes two primary interfaces for computing high-order derivatives:
+1. **`thoad.backward`**: a function-based interface that closely resembles `torch.Tensor.backward`. It provides a quick way to compute high-order gradients without needing to manage an explicit controller object, but it offers only the core functionality (derivative computation and storage).
+2. **`thoad.controller`**: a class-based interface that wraps the output tensor’s subgraph in an controller object. In addition to performing the same high-order backward pass, it gives access to advanced features such as fetching specific mixed partials, inspecting batch-dimension optimizations, overriding backward-function implementations, retaining intermediate partials, and registering custom hooks.
 
 <br>
 
-## **`thora.backward`**
+## **`thoad.backward`**
 
-The `thora.backward` function computes high-order partial derivatives of a given output tensor and stores them in each leaf tensor’s `.hgrad` attribute.
+The `thoad.backward` function computes high-order partial derivatives of a given output tensor and stores them in each leaf tensor’s `.hgrad` attribute.
 
 **Arguments**:
 
@@ -102,7 +102,7 @@ The `thora.backward` function computes high-order partial derivatives of a given
 
 **Returns**:
 
-- An instance of `thora.controller` wrapping the same tensor and graph.
+- An instance of `thoad.controller` wrapping the same tensor and graph.
 
 ---
 
@@ -110,7 +110,7 @@ The `thora.backward` function computes high-order partial derivatives of a given
 
 ```python
 import torch
-import thora
+import thoad
 from torch.nn import functional as F
 
 ### Normal PyTorch workflow
@@ -118,9 +118,9 @@ T0 = torch.rand(size=(10,15), requires_grad=True)
 T1 = torch.rand(size=(15,20), requires_grad=True)
 GO = F.scaled_dot_product_attention(query=T0, key=T1.T, value=T1.T)
 
-### Call thora backward
+### Call thoad backward
 order = 2
-thora.backward(tensor=GO, order=order)
+thoad.backward(tensor=GO, order=order)
 
 ### Checks
 # check derivative shapes
@@ -141,16 +141,16 @@ assert torch.allclose(T1_grad.flatten(), T1.hgrad[1].sum(0).flatten())
 
 <br>
 
-## **`thora.controller`**
+## **`thoad.controller`**
 
-The `controller` class wraps a tensor’s backward subgraph in an controller object, performing the same core high-order backward pass as `thora.backward` while exposing advanced customization, inspection, and override capabilities.
+The `controller` class wraps a tensor’s backward subgraph in an controller object, performing the same core high-order backward pass as `thoad.backward` while exposing advanced customization, inspection, and override capabilities.
 
 ### Instantiation
 
 Use the constructor to create an controller for any tensor requiring gradients:
 
 ```python
-controller = thora.controller(tensor=GO)  # takes graph output tensor
+controller = thoad.controller(tensor=GO)  # takes graph output tensor
 ```
 
 - **`tensor`**: A PyTorch `Tensor` with `requires_grad=True` and a non-`None` `grad_fn`.
@@ -165,7 +165,7 @@ controller = thora.controller(tensor=GO)  # takes graph output tensor
   Indicates whether every backward function in the tensor’s subgraph has a supported high-order implementation. If **`False`**, some derivatives may fall back or be unavailable.
 
 - **`.index → Dict[Type[torch.autograd.Function], Type[ExtendedAutogradFunction]]`**
-  A mapping from base PyTorch `autograd.Function` classes to thora’s `ExtendedAutogradFunction` implementations.
+  A mapping from base PyTorch `autograd.Function` classes to thoad’s `ExtendedAutogradFunction` implementations.
   **Setter**: Validates and injects your custom high-order extensions.
 
 ### Core Methods
@@ -228,7 +228,7 @@ Use the combination of independent-dimension and shape info to reshape or interp
 ### Executing Autodifferentiation
 ```python
 import torch
-import thora
+import thoad
 from torch.nn import functional as F
 
 ### Normal PyTorch workflow
@@ -236,16 +236,16 @@ T0 = torch.rand(size=(10,15), requires_grad=True)
 T1 = torch.rand(size=(15,20), requires_grad=True)
 GO = F.scaled_dot_product_attention(query=T0, key=T1.T, value=T1.T)
 
-### Instantiate thora controller and call backward
+### Instantiate thoad controller and call backward
 order = 2
-controller = thora.controller(tensor=GO)
+controller = thoad.controller(tensor=GO)
 controller.backward(order=order)
 ```
 
-The controller of a tensor subgraph can also be obtained as the return of `thora.backward`
+The controller of a tensor subgraph can also be obtained as the return of `thoad.backward`
 
 ```python
-controller = thora.backward(tensor=GO, order=order)
+controller = thoad.backward(tensor=GO, order=order)
 ```
 
 ---
@@ -255,7 +255,7 @@ controller = thora.backward(tensor=GO, order=order)
 The `fetch_hgrad` method can be used to obtain partial derivatives, including crossed ones.
 
 ```python
-controller = thora.backward(tensor=GO, order=order)
+controller = thoad.backward(tensor=GO, order=order)
 
 ### Fetch Partial Derivatives
 # fetch T0 and T1 2nd order derivatives
@@ -271,7 +271,7 @@ output_T1T0, _, _ = controller.fetch_hgrad(variables=(T1, T0))
 The `fetch_hgrad` method can also be used to obtain information about derivative shapes and batch optimizations.
 
 ```python
-controller = thora.backward(tensor=GO, order=order)
+controller = thoad.backward(tensor=GO, order=order)
 
 ### Fetch Shapes and Batch Info
 _, T0T0_shapes, T0T0_batch = controller.fetch_hgrad(variables=(T0, T0))
@@ -299,7 +299,7 @@ assert all([all([batch is None for batch in batches]) for batches in T1T1_shapes
 
 ### **Adding Backward Hooks**
 
-The `register_backward_hook` method allows registration of gradient modifications in a way comparable to what PyTorch offers for its controllers. It is important to keep in mind that, due to technical differences related to the implementation of higher-order derivative compositions, thora modifies the accumulated gradients of the tensor variable rather than the outgoing gradients of the controller. In other words, variables consumed by multiple controllers will not allow independent modification of the gradients accumulated in the sum, but only of the total gradient.
+The `register_backward_hook` method allows registration of gradient modifications in a way comparable to what PyTorch offers for its controllers. It is important to keep in mind that, due to technical differences related to the implementation of higher-order derivative compositions, thoad modifies the accumulated gradients of the tensor variable rather than the outgoing gradients of the controller. In other words, variables consumed by multiple controllers will not allow independent modification of the gradients accumulated in the sum, but only of the total gradient.
 
 
 ```python
@@ -310,7 +310,7 @@ T1 = torch.rand(size=(10, 10), requires_grad=True)
 T2 = torch.mm(T0, T1)
 GO = torch.nn.funtional.softmax(input=T2, dim=1)
 # instantiate controller
-controller = thora.backward(tensor=GO, order=order)
+controller = thoad.backward(tensor=GO, order=order)
 
 ### Register Hook
 # define a hook that performs some modification on gradients
@@ -332,10 +332,10 @@ controller.register_backward_hook(
 
 ### **Modifying the Function Index**
 
-thora uses the internal class `FunctionTranscoder` to replace the backward functions in PyTorch’s computation graph with higher-order–extended backward functions. Additionally, via the controller’s `index` property, it allows you to replace or append backward functions.
+thoad uses the internal class `FunctionTranscoder` to replace the backward functions in PyTorch’s computation graph with higher-order–extended backward functions. Additionally, via the controller’s `index` property, it allows you to replace or append backward functions.
 
 ```python
-controller = thora.backward(tensor=GO, order=order)
+controller = thoad.backward(tensor=GO, order=order)
 
 ### Modify Function Index
 # dummy code to get an instance of the grad_fn whose type is to be substituted
@@ -344,15 +344,15 @@ grad_fn = torch.relu(torch.rand(size=(1,), requires_grad=True).grad_fn
 controller.index[type(grad_fn)] = custom_extended_backward_fn
 ```
 
-To properly develop an extended backward function - which is actually implemented as a class - you must inherit from one of the two base classes that thora provides:
+To properly develop an extended backward function - which is actually implemented as a class - you must inherit from one of the two base classes that thoad provides:
 
 1. **`DirectFunction`**: designed for applying transformations directly to the external differential *(Still not fully supported)*
 2. **`ContractiveFunction`**: designed for constructing an internal-differential notation and an Einstein summation notation, with which to compose the external differential.
 
 
 ```python
-from thora.typing import Shape, Indep, IDData
-from thora.autodifferentiation import ContractiveFunction
+from thoad.typing import Shape, Indep, IDData
+from thoad.autodifferentiation import ContractiveFunction
 
 class ExampleXBackward(ContractiveFunction):
     """
@@ -395,17 +395,17 @@ class ExampleXBackward(ContractiveFunction):
 
 ### **Checking Graph Compatibility**
 
-The `compatible` attribute indicates whether the tensor subgraph is supported by thora. That is, cheks if the package provides high order implementations for all the bacwkard functions linking the tensor with the computational graph leafs.
+The `compatible` attribute indicates whether the tensor subgraph is supported by thoad. That is, cheks if the package provides high order implementations for all the bacwkard functions linking the tensor with the computational graph leafs.
 
 ```python
-controller = thora.controller(tensor=GO)
+controller = thoad.controller(tensor=GO)
 assert controller.compatible
 ```
 
 The `display_grad` method can also be useful for the purpose of cheking compatibility. This tool provides the user with a detailed breakdown of the compatibility status of each backward function in the subgraph. Any not supported function will be labeled as `(not supported)` in the display.
 
 ```python
-controller = thora.controller(tensor=GO)
+controller = thoad.controller(tensor=GO)
 controller.display_graph()
 ```
 
@@ -424,7 +424,7 @@ controller.display_graph()
 ```
 
 > \[!NOTE]
-> **thora** includes implementations of high-order backward functions for +50 PyTorch controllers. However, since many PyTorch controllers perform gradient backpropagation by composing the backward functions of simpler controllers, the total number of supported controllers is significantly higher.
+> **thoad** includes implementations of high-order backward functions for +50 PyTorch controllers. However, since many PyTorch controllers perform gradient backpropagation by composing the backward functions of simpler controllers, the total number of supported controllers is significantly higher.
 
 
 <br>
@@ -433,7 +433,7 @@ controller.display_graph()
 
 ## Future Plans
 
-The following outlines the planned future developments and improvements for thora:
+The following outlines the planned future developments and improvements for thoad:
   
 - **Extend Backward Functionality**  
   Develop further backprop capabilities to improve PyTorch integration supporting a broad subset of the most commonly used controllers.
@@ -457,12 +457,12 @@ See PyTorch’s own [LICENSE](https://github.com/pytorch/pytorch/blob/main/LICEN
 
 ## How to Cite
 
-If you use **thora** in your work, please consider citing it with the following BibTeX entry:
+If you use **thoad** in your work, please consider citing it with the following BibTeX entry:
 
 ```bibtex
-@Misc{thora2025,
-  title        = {thora: PyTorch High Order Reverse-Mode Auto-Differentiation},
-  howpublished = {\url{https://github.com/mntsx/thora}},
+@Misc{thoad2025,
+  title        = {thoad: PyTorch High Order Reverse-Mode Auto-Differentiation},
+  howpublished = {\url{https://github.com/mntsx/thoad}},
   year         = {2025}
 }
 ```
