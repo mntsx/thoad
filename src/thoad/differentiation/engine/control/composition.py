@@ -894,12 +894,12 @@ class GradOperator:
         V: VariableOperator,
         groups: list[set[Node]],
     ) -> dict[Node, bool]:
-        internal_flexibilities: dict[Node, bool] = dict()
+        internal_flexibilities: dict["Node", bool] = dict()
         for iv in V.all_ivs:
-            if iv in V.ivs:
+            if self._batch_optimization and iv in V.ivs:
                 internal_flexibilities[iv] = (
                     all(len(G.intersection(V.all_ivs) - {iv}) == 0 for G in groups)
-                    and self._batch_optimization
+                    and (not self._cross_terminals or len(V.all_evs) == 1)
                 )
             else:
                 internal_flexibilities[iv] = False
