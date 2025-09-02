@@ -9,13 +9,7 @@ import torch
 from torch import Tensor
 
 # Internal dependencies
-from thoad.graph.graph import Node
-from thoad.typing.data import AutogradFunction
-
-### constants
-_RED: str = "\033[31m"
-_GREY: str = "\033[90m"
-_RESET: str = "\033[0m"
+from thoad.typing import AutogradFunction
 
 
 class LogScaper:
@@ -47,10 +41,14 @@ class LogScaper:
 
 def display_tensor_subgraph(
     tensor: Tensor,
-    supports: Callable[[torch.autograd.Function], bool],
+    supports: Callable[[AutogradFunction], bool],
 ) -> None:
     # typings
     message: str
+    # color
+    _RED: str = "\033[31m"
+    _GREY: str = "\033[90m"
+    _RESET: str = "\033[0m"
     # log scaper
     scaper: LogScaper = LogScaper()
     scaper.scape_logger_handlers()
@@ -58,17 +56,17 @@ def display_tensor_subgraph(
     ### Display
     if not (r := tensor.grad_fn):
         return scaper.log(message="\u00b7<no grad_fn>")
-    seen = set()
+    seen: set[AutogradFunction] = set()
 
-    def dfs(fn: torch.autograd.Function, indent: str, is_last: bool) -> None:
+    def dfs(fn: AutogradFunction, indent: str, is_last: bool) -> None:
         message: str
         p: str = "\u2514" if is_last else "\u251c"
         if fn in seen:
             message = f"{indent}{p}{f'\u2500{_GREY}'}"
-            message = f"{message}\u00b7join: ({fn}){_RESET}"
+            message = f"{message}\u00b7merge: ({fn}){_RESET}"
             return scaper.log(message=message)
         seen.add(fn)
-        ok = supports(fn)
+        ok: bool = supports(fn)
         inner: str = f"\u00b7{fn}" + ("" if ok else " (not supported)")
         message = f"{indent}{p}{'\u2500' if ok else f'\u2500{_RED}'}"
         message = f"{message}{inner}{_RESET if not ok else ''}"
@@ -84,7 +82,7 @@ def display_tensor_subgraph(
     message = f"{message}{root_line}{_RESET if not ok else ''}"
     scaper.log(message=message)
     # recurse
-    roots: list[Node] = [c for c, _ in r.next_functions if c]
+    roots: list[AutogradFunction] = [c for c, _ in r.next_functions if c]
     for i, c in enumerate(roots):
         dfs(c, "", i == len(roots) - 1)
     scaper.restore_logger_handlers()

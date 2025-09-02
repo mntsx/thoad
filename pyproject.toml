@@ -18,4 +18,6 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pytest>=8.4.0",
+    "jax>=0.7.0",
+    "jaxlib>=0.7.0",
 ]

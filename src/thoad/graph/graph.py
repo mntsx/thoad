@@ -1,5 +1,5 @@
 # Standard Library Dependencies
-from typing import Tuple, Union
+from typing import cast, Protocol, Tuple, Type, Union
 
 # PyTorch dependencies
 import torch
@@ -7,18 +7,23 @@ from torch import Tensor
 
 # Internal dependencies
 from thoad.graph.structures import Node, MultiEdge
-from thoad.autodifferentiation.initialization.assignment import FunctionTranscoder
-from thoad.autodifferentiation.internals.base import ExtendedAutogradFunction
+from thoad.differentiation.initialization.assignment import FunctionTranscoder
+from thoad.differentiation.internals.base import ExtendedAutogradFunction
+from thoad.typing import AutogradFunction
+
+
+class _HasVariable(Protocol):
+    variable: Tensor
 
 
 class Graph:
     def __init__(self, tensor: Tensor) -> None:
         self._source_tensor: Tensor = tensor
-        self._nodes: set["Node"] = set()
-        self._terminals: set["Node"] = dict()
-        self._edges: dict[torch.autograd.Function, "MultiEdge"] = dict()
-        self._initial_node: "Node" = self._build()
-        self._transcoder: FunctionTranscoder = FunctionTranscoder()
+        self._nodes: dict[Tuple[Union[Tensor, AutogradFunction], int], Node] = dict()
+        self._terminals: dict[Node, Tensor] = dict()
+        self._edges: dict[AutogradFunction, MultiEdge] = dict()
+        self._initial_node: Node = self._build()
+        self._transcoder = FunctionTranscoder()
         return None
 
     def _build(self) -> Node:
@@ -30,46 +35,52 @@ class Graph:
         as a Node, then create/lookup the MultiEdge for the current grad_fn,
         register parent _ current. Recurse on each parent node.
         """
-        nodes: dict[Tuple[Union[Tensor, torch.autograd.Function], int], Node] = {}
-        edges: dict[torch.autograd.Function, MultiEdge] = {}
+        nodes: dict[Tuple[Union[Tensor, AutogradFunction], int], Node] = {}
+        edges: dict[AutogradFunction, MultiEdge] = {}
 
-        def build_node(curr_fn: torch.autograd.Function, idx: int) -> Node:
+        def build_node(curr_fn: AutogradFunction, idx: int) -> Node:
             # if there's no function (leaf), skip
             assert curr_fn is not None
-            key = (curr_fn, idx)
+            key: Tuple[Union[Tensor, AutogradFunction], int] = (curr_fn, idx)
             if key in nodes:
                 return nodes[key]
-            node: "Node" = Node()
+            node: Node = Node()
             nodes[key] = node
             if curr_fn not in edges:
                 edges[curr_fn] = MultiEdge(curr_fn)
-            me: "MultiEdge" = edges[curr_fn]
+            me: MultiEdge = edges[curr_fn]
             node.register_multiedge(multiedge=me, index=idx)
             me.register_source(output_idx=idx, node=node)
             # now link all parents _ this node
             for input_idx, (child_fn, child_idx) in enumerate(curr_fn.next_functions):
                 if child_fn is None:
+                    me.register_target(input_idx=input_idx, node=None)
                     continue
-                child_node = build_node(child_fn, child_idx)
+                child_node: Node = build_node(child_fn, child_idx)
                 me.register_target(input_idx=input_idx, node=child_node)
             if len(curr_fn.next_functions) == 0:
                 assert "variable" in dir(curr_fn)
-                leaf: Tensor = curr_fn.variable
-                key: Tuple[Tensor, int] = (leaf, 0)
-                terminal_node: "Node" = Node()
+                leaf: Tensor = cast(_HasVariable, curr_fn).variable
+                key = (leaf, 0)
+                terminal_node: Node = Node()
                 if key in nodes:
                     terminal_node = nodes[key]
                 nodes[key] = terminal_node
                 self._terminals[terminal_node] = leaf
-                terminal_node.link(edge=me, size=tuple(leaf.shape))
+                terminal_node.link(edge=me, shape=tuple(leaf.shape))
                 me.register_target(input_idx=0, node=terminal_node)
             return node
 
         # Take the very first grad_fn from `tensor.sum().grad_fn.next_functions[0]`
-        first_next_fn: torch.autograd.Function
+        aux1: Union[None, AutogradFunction] = self._source_tensor.sum().grad_fn
+        assert aux1 is not None
+        first_next_fn: Union[None, AutogradFunction]
         first_idx: int
-        first_next_fn, first_idx = self._source_tensor.sum().grad_fn.next_functions[0]
-        root_node: Node = build_node(first_next_fn, first_idx)
+        first_next_fn, first_idx = aux1.next_functions[0]
+        assert first_next_fn is not None
+
+        root_node: Node
+        root_node = build_node(first_next_fn, first_idx)
         # store into self._nodes / self._edges
         self._nodes = nodes
         self._edges = edges
@@ -96,16 +107,20 @@ class Graph:
         return self._source_tensor
 
     @property
-    def nodes(self) -> set["Node"]:
+    def nodes(self) -> set[Node]:
         return set(self._nodes.values())
 
     @property
-    def terminals(self) -> dict["Node", Tensor]:
+    def terminals(self) -> dict[Node, Tensor]:
         return self._terminals
 
-    def find_node(self, tensor: Tensor) -> "Node":
-        grad_fn: torch.autograd.Function = tensor.grad_fn
-        target_node: Union[None, "Node"] = None
+    @property
+    def edges(self) -> set[MultiEdge]:
+        return set(self._edges.values())
+
+    def find_node(self, tensor: Tensor, raw: bool = False) -> Node:
+        grad_fn: Union[None, AutogradFunction] = tensor.grad_fn
+        target_node: Union[None, Node] = None
         for key, node in self._nodes.items():
             if isinstance(key[0], Tensor):
                 assert node.multiedge is None
@@ -116,18 +131,32 @@ class Graph:
                 "Cannot find node: the provided tensor has no grad_fn and is not "
                 "part of the computational graph."
             )
+        if target_node is not None and not raw:
+            target_node = None
+            for node in self._nodes.values():
+                if node.multiedge is not None:
+                    if "variable" in dir(node.multiedge.gfn):
+                        gfn: Union[AutogradFunction, None] = node.multiedge.gfn
+                        assert gfn is not None
+                        if cast(_HasVariable, gfn).variable is tensor:
+                            target_node = node
+            assert target_node is not None
         if target_node is None:
             for node in self._nodes.values():
                 if node.multiedge is not None:
                     if node.multiedge.gfn == grad_fn:
                         target_node = node
-        assert target_node is not None
+        if target_node is None:
+            raise ValueError(
+                "Cannot find node: the provided tensor is not "
+                "part of the computational graph."
+            )
         return target_node
 
     @property
     def index(
         self,
-    ) -> dict[torch.autograd.Function, ExtendedAutogradFunction]:
+    ) -> dict[Type[AutogradFunction], Type[ExtendedAutogradFunction]]:
         return self._transcoder.index
 
     @property
@@ -137,20 +166,23 @@ class Graph:
     @property
     def compatible(self) -> bool:
         def _compatible(
-            grad_fn: torch.autograd.Function,
+            grad_fn: AutogradFunction,
             transcoder: FunctionTranscoder,
         ) -> bool:
             compatible: bool = True
             for gfn, _ in grad_fn.next_functions:
-                compatible *= _compatible(
-                    grad_fn=gfn,
-                    transcoder=transcoder,
-                )
-            compatible *= self._transcoder.supports(grad_fn=grad_fn)
+                if gfn is not None:
+                    compatible &= _compatible(
+                        grad_fn=gfn,
+                        transcoder=transcoder,
+                    )
+            compatible &= self._transcoder.supports(grad_fn=grad_fn)
             return compatible
 
+        grad_fn: Union[None, AutogradFunction] = self._source_tensor.grad_fn
+        assert grad_fn is not None
         compatible: bool = _compatible(
-            grad_fn=self._source_tensor.grad_fn,
+            grad_fn=grad_fn,
             transcoder=self._transcoder,
         )
         return compatible

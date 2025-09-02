@@ -1,1 +1,1 @@
-from thoad.user.interface import Operator, backward
+from thoad.user.interface import Controller, backward

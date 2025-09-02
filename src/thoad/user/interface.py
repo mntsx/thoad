@@ -1,26 +1,28 @@
 # Standard Library Dependencies
-from typing import Iterable, Optional, Sequence, Tuple, Type, Union
+from typing import Iterable, Sequence, Tuple, Type, Union
 
 # PyTorch dependencies
 import torch
 from torch import Tensor
 
 # Internal dependencies
-from thoad.autodifferentiation.engine.control.propagation import Controller
-from thoad.autodifferentiation.internals.base import ExtendedAutogradFunction
+import thoad.config as config
+from thoad.differentiation.engine.control.propagation import BackpropOrchestrator
+from thoad.differentiation.internals.base import ExtendedAutogradFunction
 from thoad.graph.graph import Graph
-from thoad.typing.data import Indep, Shape
-from thoad.typing.user import Hook
+from thoad.typing import Indep, Shape
+from thoad.typing.functions import Hook
 from thoad.user.display import display_tensor_subgraph
+from thoad.typing import AutogradFunction, PopulatedEDData, VPerm
 
 
-class Operator:
+class Controller:
     def __init__(self, tensor: Tensor) -> None:
         # tensor checks
         self._tensor_checks(tensor=tensor)
         # control
-        self._controller = Controller()
-        self._controller.setup_graph(tensor=tensor)
+        self._orchestrator = BackpropOrchestrator()
+        self._orchestrator.setup_graph(tensor=tensor)
         # data
         self._tensor: Tensor = tensor
 
@@ -31,12 +33,12 @@ class Operator:
     def _tensor_checks(self, tensor: Tensor) -> None:
         if not isinstance(tensor, Tensor):
             raise ValueError(
-                f"tensor must be a Tensor, but got type {type(tensor).__name__}"
+                f"arguemnt tensor expects Tensor, but got type {type(tensor).__name__}"
             )
         if not tensor.requires_grad:
-            raise ValueError("tensor tensor does not require grad")
+            raise ValueError(f"received tensor has require_grad=False")
         if tensor.grad_fn is None:
-            raise ValueError("tensor tensor does not have grad_fn")
+            raise ValueError(f"received tensor does not have grad_fn")
         return None
 
     @tensor.setter
@@ -47,22 +49,18 @@ class Operator:
         return None
 
     @property
-    def compatible(self) -> bool:
-        return self._controller.graph.compatible
-
-    @property
     def index(
         self,
     ) -> dict[
-        Type[torch.autograd.Function],
+        Type[AutogradFunction],
         Type[ExtendedAutogradFunction],
     ]:
-        return self._controller.graph.transcoder.index
+        return self._orchestrator.graph.transcoder.index
 
     @index.setter
     def index(
         self,
-        index: dict[Type[torch.autograd.Function], Type[ExtendedAutogradFunction]],
+        index: dict[Type[AutogradFunction], Type[ExtendedAutogradFunction]],
     ) -> None:
         if not isinstance(index, dict):
             raise ValueError(
@@ -74,27 +72,51 @@ class Operator:
                     f"All values in index must be ExtendedAutogradFunction, "
                     f"but got type {type(v).__name__}"
                 )
-        self._controller.graph.transcoder.index = index
+        self._orchestrator.graph.transcoder.index = index
+        return None
+
+    @property
+    def compatible(self) -> bool:
+        return self._orchestrator.graph.compatible
+
+    def display_graph(self) -> None:
+        display_tensor_subgraph(
+            tensor=self._tensor,
+            supports=self._orchestrator.graph.transcoder.supports,
+        )
         return None
 
     def _backward_checks(
         self,
         order: int,
-        crossings: Optional[bool] = False,
-        groups: Optional[Iterable[Iterable[Tensor]]] = None,
-        batch: Optional[bool] = False,
+        gradient: Union[None, Tensor] = None,
+        crossings: bool = False,
+        groups: Union[None, Iterable[Iterable[Tensor]]] = None,
+        keep_batch: bool = False,
+        keep_schwarz: bool = False,
     ) -> None:
+
+        if not isinstance(order, int):
+            raise TypeError(
+                f"order must be type int, but got type {type(order).__name__}"
+            )
+        if not order > 0:
+            raise ValueError(f"order must be a positive integer, but got {order}")
+
+        if isinstance(gradient, Tensor) and gradient.shape != self._tensor.shape:
+            raise ValueError(
+                f"gradient Tensor must have same shape as tensor, "
+                f"but got shapes {list(gradient.shape)} and {list(self._tensor.shape)}"
+            )
+        if not isinstance(gradient, (type(None), Tensor)):
+            raise TypeError(
+                f"gradient must be type Tensor, but got type {type(gradient).__name__}"
+            )
 
         if not isinstance(crossings, bool):
             raise TypeError(
-                f"crossings must be a bool, but got type {type(crossings).__name__}"
+                f"crossings must be type bool, but got type {type(crossings).__name__}"
             )
-        if not isinstance(order, int):
-            raise TypeError(
-                f"order must be an int, but got type {type(order).__name__}"
-            )
-        if not order > 0:
-            raise ValueError(f"order must be positive integer, but got {order}")
         if groups is not None:
             if crossings:
                 raise ValueError(
@@ -103,24 +125,30 @@ class Operator:
                 )
             if not isinstance(groups, Iterable):
                 raise TypeError(
-                    f"groups must be an Iterable, but got type "
+                    f"groups must be type Iterable, but got type "
                     f"{type(groups).__name__}"
                 )
             for G in groups:
-                if not isinstance(G, Sequence):
+                if not isinstance(G, Iterable):
                     raise TypeError(
-                        f"Each group must be a Sequence, but got type "
+                        f"All groups must be type Iterable, but got type "
                         f"{type(G).__name__}"
                     )
                 for T in G:
                     if not isinstance(T, Tensor):
                         raise TypeError(
-                            f"All elements in groups must be Tensor, but got "
+                            f"All elements in groups must be type Tensor, but got "
                             f"type {type(T).__name__}"
                         )
-        if not isinstance(batch, bool):
+        if not isinstance(keep_batch, bool):
             raise ValueError(
-                f"batch must be a bool, but got type {type(batch).__name__}"
+                "keep_batch must be type bool, but got type "
+                f"{type(keep_batch).__name__}"
+            )
+        if not isinstance(keep_schwarz, bool):
+            raise ValueError(
+                "keep_schwarz must be type bool, but got type "
+                f"{type(keep_schwarz).__name__}"
             )
 
         return None
@@ -128,35 +156,33 @@ class Operator:
     def backward(
         self,
         order: int,
-        crossings: Optional[bool] = False,
-        groups: Optional[Iterable[Iterable[Tensor]]] = None,
-        batch: Optional[bool] = False,
+        gradient: Union[None, Tensor] = None,
+        crossings: bool = False,
+        groups: Union[None, Iterable[Iterable[Tensor]]] = None,
+        keep_batch: bool = False,
+        keep_schwarz: bool = False,
     ) -> None:
         # checks
         self._backward_checks(
             order=order,
+            gradient=gradient,
             crossings=crossings,
             groups=groups,
-            batch=batch,
+            keep_batch=keep_batch,
+            keep_schwarz=keep_schwarz,
         )
         # backprop
-        self._controller.keepbatch = batch
-        self._controller.cross_terminals = crossings
-        self._controller.graph.transcode_fns(
+        self._orchestrator.keep_batch = keep_batch
+        self._orchestrator.keep_schwarz = keep_schwarz
+        self._orchestrator.cross_terminals = crossings
+        self._orchestrator.graph.transcode_fns(
             order=order,
             dtype=self._tensor.dtype,
             device=self._tensor.device,
         )
         groups = list() if groups is None else list(groups)
-        self._controller.propagate(order=order, groups=groups)
+        self._orchestrator.propagate(order=order, groups=groups, gradient=gradient)
 
-        return None
-
-    def display_graph(self) -> None:
-        display_tensor_subgraph(
-            tensor=self._tensor,
-            supports=self._controller.graph.transcoder.supports,
-        )
         return None
 
     def _check_variables(self, variables: Sequence[Tensor]) -> None:
@@ -171,40 +197,69 @@ class Operator:
                     f"but got {type(T).__name__!r}"
                 )
 
+    def _check_hook(self, hook: Hook) -> None:
+        code = hook.__code__
+        if set(code.co_varnames[: code.co_argcount]) != {"grad_data", "context"}:
+            raise ValueError(
+                "hook must be a Callable expecting arguments:"
+                "\n    grad_data: "
+                "Tuple[torch.Tensor, Tuple[Shape, ...], Tuple[Indep, ...]]"
+                "\n    context: dict[AutogradFunction, set[Tensor]]"
+            )
+        return None
+
     def register_backward_hook(
         self,
         variables: Sequence[Tensor],
         hook: Hook,
     ) -> None:
-        self._check_variables(variables=variables)
-        self._controller.add_backward_hook(key=variables, hook=hook)
+        if bool(getattr(config, "DEBUG", False)):
+            self._check_variables(variables=variables)
+            self._check_hook(hook=hook)
+        self._orchestrator.add_backward_hook(key=tuple(variables), hook=hook)
         return None
 
     def require_grad_(self, variables: Sequence[Tensor]) -> None:
         self._check_variables(variables=variables)
-        self._controller.add_gradient_retention(key=variables)
+        self._orchestrator.add_gradient_retention(key=tuple(variables))
         return None
 
     def fetch_hgrad(
-        self, variables: Sequence[Tensor], batch: Optional[bool] = False
-    ) -> Tuple[Tensor, Tuple[Indep, ...], Tuple[Shape, ...]]:
-        self._check_variables(variables=variables)
-        data: Tuple[
-            Tensor,
-            Tuple[Tuple[int, ...]],
-            Tuple[Tuple[Union[None, int], ...]],
-        ]
-        data = self._controller.fetch_hgrad(key=variables, keepbatch=batch)
-        return data
+        self,
+        variables: Sequence[Tensor],
+        keep_batch: bool = False,
+        keep_schwarz: bool = False,
+    ) -> Tuple[Tensor, Tuple[Tuple[Shape, ...], Tuple[Indep, ...], VPerm]]:
+        if bool(getattr(config, "DEBUG", False)):
+            self._check_variables(variables=variables)
+        data: PopulatedEDData = self._orchestrator.fetch_hgrad(
+            key=tuple(variables),
+            keep_batch=keep_batch,
+            keep_schwarz=keep_schwarz,
+        )
+        return (data[0], (data[1], data[2], data[3]))
+
+    def clear(self) -> None:
+        self._orchestrator.clear()
+        return None
 
 
 def backward(
     tensor: Tensor,
     order: int,
-    crossings: Optional[bool] = False,
-    groups: Optional[Iterable[Iterable[Tensor]]] = None,
-    batch: Optional[bool] = False,
-) -> Operator:
-    operator: Operator = Operator(tensor=tensor)
-    operator.backward(order=order, crossings=crossings, groups=groups, batch=batch)
-    return operator
+    gradient: Union[None, Tensor] = None,
+    crossings: bool = False,
+    groups: Union[None, Iterable[Iterable[Tensor]]] = None,
+    keep_batch: bool = False,
+    keep_schwarz: bool = False,
+) -> Controller:
+    controller: Controller = Controller(tensor=tensor)
+    controller.backward(
+        order=order,
+        gradient=gradient,
+        crossings=crossings,
+        groups=groups,
+        keep_batch=keep_batch,
+        keep_schwarz=keep_schwarz,
+    )
+    return controller
