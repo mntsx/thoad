@@ -80,11 +80,11 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 * **`order`**: A positive integer specifying the maximum order of derivatives to compute.
 
-* **`gradient`**: (optional) A tensor with the same shape as `tensor` to seed the vector-Jacobian product (i.e., custom upstream gradient). If omitted, the default is used.
+* **`gradient`**: A tensor with the same shape as `tensor` to seed the vector-Jacobian product (i.e., custom upstream gradient). If omitted, the default is used.
 
 * **`crossings`**: A boolean flag (default=`False`). If set to `True`, mixed partial derivatives (i.e., derivatives that involve more than one distinct leaf tensor) will be computed.
 
-* **`groups`**: An optional iterable of disjoint groups of leaf tensors. When `crossings=False`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True` and `groups` is provided, a *ValueError* will be raised (they are mutually exclusive).
+* **`groups`**: An iterable of disjoint groups of leaf tensors. When `crossings=False`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True` and `groups` is provided, a *ValueError* will be raised (they are mutually exclusive).
 
 * **`keep_batch`**: A boolean flag (default=`False`) that controls how output dimensions are organized in the computed gradients.
 
