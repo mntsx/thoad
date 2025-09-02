@@ -1,19 +1,15 @@
 [project]
 name = "thoad"
 version = "0.1.0"
-description = "Add your description here"
+description = "**thoad** (Torch High Order Automatic Differentiation) is a lightweight reverse-mode autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations."
 readme = "README.md"
 authors = [
     { name = "Miguel Montes Lorenzo", email = "112613446+MiguelMontesLorenzo@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "torch>=2.7.1",
+    "torch>=2.4.1",
 ]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
@@ -21,3 +17,14 @@ dev = [
     "jax>=0.7.0",
     "jaxlib>=0.7.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/thoad"]
+
+[project.urls]
+Homepage = "https://github.com/mntsx/thoad"
+Issues = "https://github.com/mntsx/thoad/issues"
