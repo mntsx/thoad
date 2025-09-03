@@ -30,19 +30,17 @@
 - **Diagonal Optimization**: the package detects and avoids duplication of cross diagonal dimensions during back-propagation.
 - **Symmetry Optimization**: the package avoids computation of derivative blocks unninformative due to Schwarz theorem.
 
-<!--
-
 ## Installation
 
 **thoad** can be installed either from PyPI or directly from the GitHub repository.
 
-* **From PyPI**
+- **From PyPI**
 
   ```bash
   pip install thoad
   ```
 
-* **From GitHub**
+- **From GitHub**
   Install directly with `pip` (fetches the latest from the `main` branch):
 
   ```bash
@@ -56,8 +54,6 @@
   cd thoad
   pip install -e .
   ```
-  
--->
 
 <br>
 
