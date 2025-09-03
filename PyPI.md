@@ -1,5 +1,4 @@
-<!-- # PyTorch High Order AutoDifferentiator (thoad) -->
-# $\text{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{Reverse-Mode }{\color{#EE4C2C}A}{uto-}{\color{#EE4C2C}D}{ifferentiation}}$
+# PyTorch High Order Automatic Differentiation
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT) <!-- [![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/) [![PyPi downloads](https://img.shields.io/pypi/dt/thoad.svg?label=downloads&color=blue)](https://pypi.org/project/thoad/) -->
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python/cpython)
@@ -8,7 +7,7 @@
 
 <br>
 
-> \[!NOTE]
+> NOTE.
 > This package is still in an experimental stage. It may exhibit unstable behavior or produce unexpected results, and is subject to possible minor structural modifications in the future.
 
 <br>
@@ -28,19 +27,17 @@
 - **Diagonal Optimization**: the package detects and avoids duplication of cross diagonal dimensions during back-propagation.
 - **Symmetry Optimization**: the package avoids computation of derivative blocks unninformative due to Schwarz theorem.
 
-<!--
-
 ## Installation
 
 **thoad** can be installed either from PyPI or directly from the GitHub repository.
 
-* **From PyPI**
+- **From PyPI**
 
   ```bash
   pip install thoad
   ```
 
-* **From GitHub**
+- **From GitHub**
   Install directly with `pip` (fetches the latest from the `main` branch):
 
   ```bash
@@ -55,8 +52,6 @@
   pip install -e .
   ```
   
--->
-
 <br>
 
 ---
@@ -246,7 +241,7 @@ controller = thoad.Controller(tensor=Z)
 controller.backward(order=order, crossings=True)
 
 ### Fetch Partial Derivatives
-# fetch T0 and T1 2nd order derivatives
+# fetch X and Y 2nd order derivatives
 partial_XX, _ = controller.fetch_hgrad(variables=(X, X))
 partial_YY, _ = controller.fetch_hgrad(variables=(Y, Y))
 assert torch.allclose(partial_XX, X.hgrad[1])
@@ -258,7 +253,7 @@ partial_YX, _ = controller.fetch_hgrad(variables=(Y, X))
 
 ---
 
-> \[!TIP]
+> TIP.
 > A more detailed user guide with examples and feature walkthroughs is available in the notebook:
 > [https://github.com/mntsx/thoad/blob/master/examples/user\_guide.ipynb](https://github.com/mntsx/thoad/blob/master/examples/user_guide.ipynb)
 

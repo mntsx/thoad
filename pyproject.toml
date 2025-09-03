@@ -1,8 +1,8 @@
 [project]
 name = "thoad"
 version = "0.1.0"
-description = "**thoad** (Torch High Order Automatic Differentiation) is a lightweight reverse-mode autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations."
-readme = "README.md"
+description = "thoad (Torch High Order Automatic Differentiation) is a lightweight reverse-mode autodifferentiation engine written entirely in Python that works over PyTorch’s computational graph to compute high order partial derivatives. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - thoad is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations."
+readme = "PyPI.md"
 authors = [
     { name = "Miguel Montes Lorenzo", email = "112613446+MiguelMontesLorenzo@users.noreply.github.com" }
 ]
