@@ -103,8 +103,6 @@ The `thoad.backward` function computes high-order partial derivatives of a given
     - **Axes 2...(k+1)** correspond to dimensions shared by multiple input tensors and treated independently throughout the graph. These are dimensions that are only operated on element-wise (e.g. batch dimensions).
     - **Axes (k+2)...(k+N+1)** each flatten all `input_numel` elements of the leaf tensor, one axis per derivative order.
 
-    However, if a particular output axis does not influence the gradient for a given leaf, that axis is not expanded and instead becomes a size-1 dimension. This means only those output dimensions that actually affect a particular leaf’s gradient “spread” into the input axes; any untouched axes remain as 1, saving memory.
-
 - **`keep_schwarz`**: A boolean flag (default=`False`). If `True`, symmetric (Schwarz) permutations are retained explicitly instead of being canonicalized/reduced—useful for debugging or inspecting non-reduced layouts.
 
 **Returns**:
