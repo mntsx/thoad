@@ -22,8 +22,9 @@ from tests.graph.utils import (
 device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-@pytest.fixture(params=[acquire_test0_gfn_map, acquire_test1_gfn_map],
-                ids=["contractive", "direct"])
+@pytest.fixture(
+    params=[acquire_test0_gfn_map, acquire_test1_gfn_map], ids=["contractive", "direct"]
+)
 def gfn_map(request) -> dict[Type, Type]:
     return request.param
 
@@ -51,6 +52,7 @@ def hook_model(
     assert all(isinstance(T, Tensor) for Ts in context.values() for T in Ts)
     # return untouched grad data
     return grad_data
+
 
 def test_hooks_01(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
@@ -98,6 +100,7 @@ def test_hooks_01(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     return None
 
+
 def test_hooks_02(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     ### TEST:
@@ -127,6 +130,7 @@ def test_hooks_02(gfn_map: Callable[[], dict[Type, Type]]) -> None:
         pass
 
     return None
+
 
 def test_hooks_03(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
@@ -174,6 +178,7 @@ def test_hooks_03(gfn_map: Callable[[], dict[Type, Type]]) -> None:
     controller.clear()
 
     return None
+
 
 def test_hooks_04(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
@@ -224,6 +229,7 @@ def test_hooks_04(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     return None
 
+
 def test_hooks_05(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     ### TEST:
@@ -273,6 +279,7 @@ def test_hooks_05(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     return None
 
+
 def test_hooks_06(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     ### TEST:
@@ -304,6 +311,7 @@ def test_hooks_06(gfn_map: Callable[[], dict[Type, Type]]) -> None:
         pass
 
     return None
+
 
 def test_hooks_07(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
@@ -355,6 +363,7 @@ def test_hooks_07(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     return None
 
+
 def test_hooks_08(gfn_map: Callable[[], dict[Type, Type]]) -> None:
 
     ### TEST:
@@ -400,6 +409,7 @@ def test_hooks_08(gfn_map: Callable[[], dict[Type, Type]]) -> None:
     controller.clear()
 
     return None
+
 
 def test_hooks_09() -> None:
 
