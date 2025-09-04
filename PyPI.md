@@ -42,13 +42,13 @@
   Install directly with `pip` (fetches the latest from the `main` branch):
 
   ```bash
-  pip install git+https://github.com/yourusername/thoad.git
+  pip install git+https://github.com/mntsx/thoad.git
   ```
 
   Or, if you prefer to clone and install in editable mode:
 
   ```bash
-  git clone https://github.com/yourusername/thoad.git
+  git clone https://github.com/mntsx/thoad.git
   cd thoad
   pip install -e .
   ```
