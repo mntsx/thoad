@@ -3,12 +3,22 @@
 <!-- # $\text{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{\color{#EE4C2C}A}{utomatic }{\color{#EE4C2C}D}{ifferentiation}}$ -->
 <img src="title.svg" alt="Logo" width="100%"/>
 
-
+<!--
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
-[![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/)<!-- [![PyPi downloads](https://img.shields.io/pypi/dt/thoad.svg?label=downloads&color=blue)](https://pypi.org/project/thoad/) -->
+[![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python/cpython)
 [![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch/pytorch)
 [![black](https://img.shields.io/badge/code%20style-black-202020.svg?style=flat)](https://github.com/psf/black)
+-->
+<div align="center">
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+[![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python/cpython)
+[![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch/pytorch)
+[![black](https://img.shields.io/badge/code%20style-black-202020.svg?style=flat)](https://github.com/psf/black)
+
+</div>
 
 <br>
 
