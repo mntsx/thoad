@@ -100,7 +100,7 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 - **`keep_batch`**: A boolean flag (default=`False`) that controls how output dimensions are organized in the computed derivatives.
 
-  - **When `keep_batch=False`:**
+  - **When `keep_batch=False`:**  
     The derivative preserves one first flattened "primal" axis, followed by each original partial shape, sorted in differentiation order. Concretelly:
 
     - A single "primal" axis that contains every element of the graph output tensor (flattened into one dimension).
@@ -111,7 +111,7 @@ The `thoad.backward` function computes high-order partial derivatives of a given
     - **Axis 1:** indexes all `output_numel` outputs
     - **Axes 2…(N+1):** each indexes all `input_numel` inputs
 
-  - **When `keep_batch=True`:**
+  - **When `keep_batch=True`:**  
     The derivative shape follows the same ordering as in the previous case, but includes a series of "independent dimensions" immediately after the "primal" axis.
 
     - **Axis 1** flattens all elements of the output tensor (size = `output_numel`).
