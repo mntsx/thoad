@@ -267,8 +267,8 @@ partial_YX, _ = controller.fetch_hgrad(variables=(Y, X))
 ---
 
 > \[!TIP]
-> A more detailed user guide with examples and feature walkthroughs is available in the notebook:
-> [https://github.com/mntsx/thoad/blob/master/examples/user\_guide.ipynb](https://github.com/mntsx/thoad/blob/master/examples/user_guide.ipynb)
+> Consult the user guide notebook for an in-depth overview of features with practical examples:
+> [user guide](https://github.com/mntsx/thoad/blob/master/examples/user_guide.ipynb)
 
 <br>
 
