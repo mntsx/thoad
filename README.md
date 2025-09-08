@@ -124,7 +124,7 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 ---
 
-### Executing Autodifferentiation
+### Executing Autodifferentiation via thoad.backward
 
 ```python
 import torch
@@ -236,7 +236,7 @@ Use the combination of independent-dimension info and shapes to reshape or inter
 
 ---
 
-### Executing Autodifferentiation
+### Executing Autodifferentiation via thoad.Controller.backward
 
 ```python
 import torch
