@@ -29,7 +29,7 @@
 
 # About
 
-**thoad** is a lightweight reverse-mode automatic differentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
+**thoad** is a lightweight reverse-mode automatic differentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced derivative-based computations.
 
 ## Core Features
 
@@ -77,7 +77,7 @@
 
 **thoad** exposes two primary interfaces for computing high-order derivatives:
 
-1. **`thoad.backward`**: a function-based interface that closely resembles `torch.Tensor.backward`. It provides a quick way to compute high-order gradients without needing to manage an explicit controller object, but it offers only the core functionality (derivative computation and storage).
+1. **`thoad.backward`**: a function-based interface that closely resembles `torch.Tensor.backward`. It provides a quick way to compute high-order pertial derivatives without needing to manage an explicit controller object, but it offers only the core functionality (derivative computation and storage).
 2. **`thoad.Controller`**: a class-based interface that wraps the output tensor’s subgraph in a controller object. In addition to performing the same high-order backward pass, it gives access to advanced features such as fetching specific mixed partials, inspecting batch-dimension optimizations, overriding backward-function implementations, retaining intermediate partials, and registering custom hooks.
 
 <br>
@@ -88,7 +88,7 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 **Arguments**:
 
-- **`tensor`**: A PyTorch tensor from which to start the backward pass. This tensor must require gradients and be part of a differentiable graph.
+- **`tensor`**: A PyTorch tensor from which to start the backward pass. This tensor must have `require_grad=True `and be part of a differentiable graph.
 
 - **`order`**: A positive integer specifying the maximum order of derivatives to compute.
 
@@ -98,25 +98,25 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 - **`groups`**: An iterable of disjoint groups of leaf tensors. When `crossings=False`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True` and `groups` is provided, a *ValueError* will be raised (they are mutually exclusive).
 
-- **`keep_batch`**: A boolean flag (default=`False`) that controls how output dimensions are organized in the computed gradients.
+- **`keep_batch`**: A boolean flag (default=`False`) that controls how output dimensions are organized in the computed derivatives.
 
   - **When `keep_batch=False`:**
-    Gradients are returned in a fully flattened form. Concretely, think of the gradient tensor as having:
+    The derivative preserves one first flattened "primal" axis, followed by each original partial shape, sorted in differentiation order. Concretelly:
 
-    - A single “output” axis that lists every element of the original output tensor (flattened into one dimension).
-    - One axis per derivative order, each listing every element of the corresponding input (also flattened).
+    - A single "primal" axis that contains every element of the graph output tensor (flattened into one dimension).
+    - A group of axes per derivative order, each matching the shape of the respective differentially targeted tensor.
 
-    For an N-th order derivative of a leaf tensor with `input_numel` elements and an output with `output_numel` elements, the gradient shape is:
+    For an N-th order derivative of a leaf tensor with `input_numel` elements and an output with `output_numel` elements, the deerivative shape is:
 
     - **Axis 1:** indexes all `output_numel` outputs
     - **Axes 2…(N+1):** each indexes all `input_numel` inputs
 
   - **When `keep_batch=True`:**
-    Gradients preserve both a flattened “output” axis and each original output dimension before any input axes. You can visualize it as:
+    The derivative shape follows the same ordering as in the previous case, but includes a series of "independent dimensions" immediately after the "primal" axis.
 
     - **Axis 1** flattens all elements of the output tensor (size = `output_numel`).
-    - **Axes 2...(k+1)** correspond to dimensions shared by multiple input tensors and treated independently throughout the graph. These are dimensions that are only operated on element-wise (e.g. batch dimensions).
-    - **Axes (k+2)...(k+N+1)** each flatten all `input_numel` elements of the leaf tensor, one axis per derivative order.
+    - **Axes 2...(k+i)** correspond to dimensions shared by multiple input tensors and treated independently throughout the graph. These are dimensions that are only operated on element-wise (e.g. batch dimensions).
+    - **Axes (k+i+1)...(k+N+1)** each flatten all `input_numel` elements of the leaf tensor, one axis per derivative order.
 
 - **`keep_schwarz`**: A boolean flag (default=`False`). If `True`, symmetric (Schwarz) permutations are retained explicitly instead of being canonicalized/reduced—useful for debugging or inspecting non-reduced layouts.
 
@@ -179,7 +179,7 @@ controller = thoad.Controller(tensor=GO)  # takes graph output tensor
 
 - **`.tensor → Tensor`**
   The output tensor underlying this controller.
-  **Setter**: Replaces the tensor (after validation), rebuilds the internal computation graph, and invalidates any previously computed gradients.
+  **Setter**: Replaces the tensor (after validation), rebuilds the internal computation graph, and invalidates any previously computed derivatives.
 
 - **`.compatible → bool`**
   Indicates whether every backward function in the tensor’s subgraph has a supported high-order implementation. If **`False`**, some derivatives may fall back or be unavailable.
@@ -198,7 +198,7 @@ Performs the high-order backward pass up to the specified derivative `order`, st
 - **`gradient`** (`Optional[Tensor]`): custom upstream gradient with the same shape as `controller.tensor`.
 - **`crossings`** (`bool`, default `False`): If `True`, mixed partial derivatives across different leaf tensors will be computed.
 - **`groups`** (`Optional[Iterable[Iterable[Tensor]]]`, default `None`): When `crossings=False`, restricts mixed partials to those whose leaf tensors all lie within a single group. If `crossings=True` and `groups` is provided, a *ValueError* is raised.
-- **`keep_batch`** (`bool`, default `False`): controls whether independent output axes are kept separate (batched) or merged (flattened) in stored/retrieved gradients.
+- **`keep_batch`** (`bool`, default `False`): controls whether independent output axes are kept separate (batched) or merged (flattened) in stored/retrieved derivatives.
 - **`keep_schwarz`** (`bool`, default `False`): if `True`, retains symmetric permutations explicitly (no Schwarz reduction).
 
 #### **`.display_graph() → None`**
@@ -207,7 +207,7 @@ Prints a tree representation of the tensor’s backward subgraph. Supported node
 
 #### **`.register_backward_hook(variables: Sequence[Tensor], hook: Callable) → None`**
 
-Registers a user-provided `hook` to run during the backward pass whenever gradients for any of the specified leaf `variables` are computed.
+Registers a user-provided `hook` to run during the backward pass whenever derivatives for any of the specified leaf `variables` are computed.
 
 - **`variables`** (`Sequence[Tensor]`): Leaf tensors to monitor.
 - **`hook`** (`Callable[[Tuple[Tensor, Tuple[Shape, ...], Tuple[Indep, ...]], dict[AutogradFunction, set[Tensor]]], Tuple[Tensor, Tuple[Shape, ...], Tuple[Indep, ...]]]`):
@@ -215,7 +215,7 @@ Registers a user-provided `hook` to run during the backward pass whenever gradie
 
 #### **`.require_grad_(variables: Sequence[Tensor]) → None`**
 
-Marks the given leaf `variables` so that all intermediate partials involving them are retained, even if not required for the final requested gradients. Useful for inspecting or re-using higher-order intermediates.
+Marks the given leaf `variables` so that all intermediate partials involving them are retained, even if not required for the final requested derivatives. Useful for inspecting or re-using higher-order intermediates.
 
 #### **`.fetch_hgrad(variables: Sequence[Tensor], keep_batch: bool = False, keep_schwarz: bool = False) → Tuple[Tensor, Tuple[Tuple[Shape, ...], Tuple[Indep, ...], VPerm]]`**
 
@@ -227,14 +227,14 @@ Retrieves the precomputed high-order partial corresponding to the ordered sequen
 
 Returns a pair:
 
-1. **Gradient tensor**: the computed partial derivatives, shaped according to output and input dimensions (respecting `keep_batch`/`keep_schwarz`).
+1. **Derivative tensor**: the computed partial derivatives, shaped according to output and input dimensions (respecting `keep_batch`/`keep_schwarz`).
 2. **Metadata tuple**
 
    - **Shapes** (`Tuple[Shape, ...]`): the original shape of each leaf tensor.
    - **Indeps** (`Tuple[Indep, ...]`): for each variable, indicates which output axes remained independent (batch) vs. which were merged into derivative axes.
    - **VPerm** (`Tuple[int, ...]`): a permutation that maps the internal derivative layout to the requested `variables` order.
 
-Use the combination of independent-dimension info and shapes to reshape or interpret the returned gradient tensor in your workflow.
+Use the combination of independent-dimension info and shapes to reshape or interpret the returned derivative tensor in your workflow.
 
 ---
 
@@ -284,7 +284,7 @@ The following outlines the planned future developments and improvements for thoa
   Develop further backprop capabilities to improve PyTorch integration supporting a broad subset of the most commonly used operators.
 
 - **Advanced Optimization Framework**  
-  Build an optimization module inspired by the design of `torch.optim`, with full support for higher-order gradients and flexible optimizer composition.
+  Build an optimization module inspired by the design of `torch.optim`, with full support for higher-order derivatives and flexible optimizer composition.
 
 - **PyTorch Integration**  
   It would be exciting to eventually fully-integrate the package into the PyTorch framework, although it's unlikely to happen, since ensuring their coordinated stability would require relevant adjustments to the mentioned library. Specifically:
