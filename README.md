@@ -109,14 +109,14 @@ The `thoad.backward` function computes high-order partial derivatives of a given
     For an N-th order derivative of a leaf tensor with `input_numel` elements and an output with `output_numel` elements, the deerivative shape is:
 
     - **Axis 1:** indexes all `output_numel` outputs
-    - **Axes 2…(N+1):** each indexes all `input_numel` inputs
+    - **Axes 2…(sum(Nj)+1):** each indexes all `input_numel` inputs
 
   - **When `keep_batch=True`:**  
     The derivative shape follows the same ordering as in the previous case, but includes a series of "independent dimensions" immediately after the "primal" axis.
 
     - **Axis 1** flattens all elements of the output tensor (size = `output_numel`).
     - **Axes 2...(k+i)** correspond to dimensions shared by multiple input tensors and treated independently throughout the graph. These are dimensions that are only operated on element-wise (e.g. batch dimensions).
-    - **Axes (k+i+1)...(k+N+1)** each flatten all `input_numel` elements of the leaf tensor, one axis per derivative order.
+    - **Axes (k+i+1)...(k+i+sum(Nj)+1)** each flatten all `input_numel` elements of the leaf tensor, one axis per derivative order.
 
 - **`keep_schwarz`**: A boolean flag (default=`False`). If `True`, symmetric (Schwarz) permutations are retained explicitly instead of being canonicalized/reduced—useful for debugging or inspecting non-reduced layouts.
 
