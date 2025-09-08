@@ -281,13 +281,13 @@ partial_YX, _ = controller.fetch_hgrad(variables=(Y, X))
 The following outlines the planned future developments and improvements for thoad:
   
 - **Extend Backward Functionality**  
-  Develop further backprop capabilities to improve PyTorch integration supporting a broad subset of the most commonly used controllers.
+  Develop further backprop capabilities to improve PyTorch integration supporting a broad subset of the most commonly used operators.
 
 - **Advanced Optimization Framework**  
   Build an optimization module inspired by the design of `torch.optim`, with full support for higher-order gradients and flexible optimizer composition.
 
 - **PyTorch Integration**  
-  It would be exciting to eventually fully-integrate the package into the PyTorch framework, although it's unlikely to happen, since ensuring its coordinated stability would require relevant adjustments to the mentioned library. Specifically:
+  It would be exciting to eventually fully-integrate the package into the PyTorch framework, although it's unlikely to happen, since ensuring their coordinated stability would require relevant adjustments to the mentioned library. Specifically:
   - Providing it with a more comprehensive tool for accessing controllers' contextual information.
   - Improving the accessibility to the type signatures of the backward functions.
 
