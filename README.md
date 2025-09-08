@@ -31,7 +31,7 @@
 
 **thoad** is a lightweight reverse-mode automatic differentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced gradient-based computations.
 
-## Key Features
+## Core Features
 
 - **Python 3.12+**: thoad is implemented in Python 3.12, and its compatible with any higher Python version.
 - **Built on PyTorch**: thoad uses PyTorch as its only dependency. It is **compatible with +70 PyTorch operator backwards**.
@@ -305,7 +305,7 @@ If you use **thoad** in your work, please consider citing it with the following 
 
 ```bibtex
 @Misc{thoad2025,
-  title        = {thoad: PyTorch High Order Reverse-Mode Auto-Differentiation},
+  title        = {thoad: PyTorch High Order Reverse-Mode Automatic Differentiation},
   howpublished = {\url{https://github.com/mntsx/thoad}},
   year         = {2025}
 }
