@@ -78,7 +78,7 @@
 **thoad** exposes two primary interfaces for computing high-order derivatives:
 
 1. **`thoad.backward`**: a function-based interface that closely resembles `torch.Tensor.backward`. It provides a quick way to compute high-order pertial derivatives without needing to manage an explicit controller object, but it offers only the core functionality (derivative computation and storage).
-2. **`thoad.Controller`**: a class-based interface that wraps the output tensor’s subgraph in a controller object. In addition to performing the same high-order backward pass, it gives access to advanced features such as fetching specific mixed partials, inspecting batch-dimension optimizations, overriding backward-function implementations, retaining intermediate partials, and registering custom hooks.
+2. **`thoad.Controller`**: a class-based interface that wraps the output tensor’s subgraph in a controller object. In addition to performing the same high-order backward pass, it gives access to advanced features such as fetching specific cross partials, inspecting batch-dimension optimizations, overriding backward-function implementations, retaining intermediate partials, and registering custom hooks.
 
 <br>
 
@@ -96,7 +96,7 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 - **`crossings`**: A boolean flag (default=`False`). If set to `True`, cross partial derivatives (i.e., derivatives that involve more than one distinct leaf tensor) will be computed.
 
-- **`groups`**: An iterable of disjoint groups of leaf tensors. When `crossings=False`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True` and `groups` is provided, a *ValueError* will be raised (they are mutually exclusive).
+- **`groups`**: An iterable of disjoint groups of leaf tensors. When `crossings=False`, only those cross partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True` and `groups` is provided, a *ValueError* will be raised (they are mutually exclusive).
 
 - **`keep_batch`**: A boolean flag (default=`False`) that controls how output dimensions are organized in the computed derivatives.
 
@@ -196,8 +196,8 @@ Performs the high-order backward pass up to the specified derivative `order`, st
 
 - **`order`** (`int > 0`): maximum derivative order.
 - **`gradient`** (`Optional[Tensor]`): custom upstream gradient with the same shape as `controller.tensor`.
-- **`crossings`** (`bool`, default `False`): If `True`, mixed partial derivatives across different leaf tensors will be computed.
-- **`groups`** (`Optional[Iterable[Iterable[Tensor]]]`, default `None`): When `crossings=False`, restricts mixed partials to those whose leaf tensors all lie within a single group. If `crossings=True` and `groups` is provided, a *ValueError* is raised.
+- **`crossings`** (`bool`, default `False`): If `True`, cross partial derivatives across different leaf tensors will be computed.
+- **`groups`** (`Optional[Iterable[Iterable[Tensor]]]`, default `None`): When `crossings=False`, restricts cross partials to those whose leaf tensors all lie within a single group. If `crossings=True` and `groups` is provided, a *ValueError* is raised.
 - **`keep_batch`** (`bool`, default `False`): controls whether independent output axes are kept separate (batched) or merged (flattened) in stored/retrieved derivatives.
 - **`keep_schwarz`** (`bool`, default `False`): if `True`, retains symmetric permutations explicitly (no Schwarz reduction).
 
@@ -221,7 +221,7 @@ Marks the given leaf `variables` so that all intermediate partials involving the
 
 Retrieves the precomputed high-order partial corresponding to the ordered sequence of leaf `variables`.
 
-- **`variables`** (`Sequence[Tensor]`): the leaf tensors whose mixed partial you want.
+- **`variables`** (`Sequence[Tensor]`): the leaf tensors whose cross partial you want.
 - **`keep_batch`** (`bool`, default `False`): if `True`, each independent output axis remains a separate batch dimension in the returned tensor; if `False`, independent axes are distributed/merged into derivative dimensions.
 - **`keep_schwarz`** (`bool`, default `False`): if `True`, returns derivatives retaining symmetric permutations explicitly.
 
