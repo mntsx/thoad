@@ -29,7 +29,7 @@
 
 # About
 
-**thoad** is a lightweight reverse-mode automatic differentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced derivative-based computations.
+**thoad** is a lightweight reverse-mode automatic differentiation engine written entirely in Python that works over PyTorch’s computational graph to compute **high order partial derivatives**. Unlike PyTorch’s native autograd - which is limited to first-order native partial derivatives - **thoad** is able to performantly propagate arbitray-order derivatives throughout the graph, enabling more advanced derivative-based workflows.
 
 ## Core Features
 
@@ -92,9 +92,9 @@ The `thoad.backward` function computes high-order partial derivatives of a given
 
 - **`order`**: A positive integer specifying the maximum order of derivatives to compute.
 
-- **`gradient`**: A tensor with the same shape as `tensor` to seed the vector-Jacobian product (i.e., custom upstream gradient). If omitted, the default is used.
+- **`gradient`**: A tensor with the same shape as `tensor` to seed the vector-Jacobian product (i.e., custom upstream gradient). If omitted, the primal vector space is not reduced.
 
-- **`crossings`**: A boolean flag (default=`False`). If set to `True`, mixed partial derivatives (i.e., derivatives that involve more than one distinct leaf tensor) will be computed.
+- **`crossings`**: A boolean flag (default=`False`). If set to `True`, cross partial derivatives (i.e., derivatives that involve more than one distinct leaf tensor) will be computed.
 
 - **`groups`**: An iterable of disjoint groups of leaf tensors. When `crossings=False`, only those mixed partials whose participating leaf tensors all lie within a single group will be calculated. If `crossings=True` and `groups` is provided, a *ValueError* will be raised (they are mutually exclusive).
 
