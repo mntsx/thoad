@@ -143,7 +143,7 @@ order = 2
 thoad.backward(tensor=Z, order=order)
 
 ### Checks
-# check derivative shapes
+# check derivative shapes via torch.Tensor dynamically included attribute: hgrad
 for o in range(1, 1 + order):
     assert X.hgrad[o - 1].shape == (Z.numel(), *(o * tuple(X.shape)))
     assert Y.hgrad[o - 1].shape == (Z.numel(), *(o * tuple(Y.shape)))
@@ -288,7 +288,7 @@ The following outlines the planned future developments and improvements for thoa
 
 - **PyTorch Integration**  
   It would be exciting to eventually fully-integrate the package into the PyTorch framework, although it's unlikely to happen, since ensuring their coordinated stability would require relevant adjustments to the mentioned library. Specifically:
-  - Providing it with a more comprehensive tool for accessing controllers' contextual information.
+  - Providing it with a more comprehensive tool for accessing operators' contextual information.
   - Improving the accessibility to the type signatures of the backward functions.
 
 ## License
