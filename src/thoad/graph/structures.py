@@ -137,10 +137,9 @@ class MultiEdge:
         return self._xfn
 
     def _collect_sources(self) -> None:
-        key_range: Tuple[int, ...] = tuple(range(len(self._source_index)))
-        assert set(self._source_index.keys()) == set(key_range)
+        key_range: Tuple[int, ...] = tuple(range(max(self._source_index) + 1))
         sources: list["Node"] = list()
-        for i in key_range:
+        for i in (i for i in key_range if i in self._source_index):
             sources.append(self._source_index[i])
         self._sources = tuple(sources)
         return None
