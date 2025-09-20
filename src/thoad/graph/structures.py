@@ -157,11 +157,10 @@ class MultiEdge:
         return tuple(N for N in self._sources if N is not None)
 
     def _collect_targets(self) -> None:
-        key_range: Tuple[int, ...] = tuple(range(len(self._target_index)))
-        assert set(self._target_index.keys()) == set(key_range)
-        targets: list[Union[None, "Node"]] = list()
-        for i in key_range:
-            targets.append(self._target_index[i])
+        key_range: Tuple[int, ...] = tuple(range(max(self._target_index) + 1))
+        targets: list["Node"] = list()
+        for i in self._target_index:
+            targets.append(self._target_index.get(i, None))
         self._targets = tuple(targets)
         return None
 
