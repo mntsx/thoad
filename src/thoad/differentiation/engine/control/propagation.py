@@ -104,10 +104,10 @@ class BackpropOrchestrator:
         within backpropagation.
         """
         assert self._graph is not None
-        key_nodes: Tuple[Node, ...]
+        key_nodes: Tuple["Node", ...]
         key_nodes = tuple(self._graph.find_node(tensor=T) for T in key)
-        blocking_keys: list[Tuple[Node, ...]] = [key_nodes, *self._bloking_keys]
-        # blocking_edges: set[Node] = set()
+        blocking_keys: list[Tuple["Node", ...]] = [key_nodes, *self._bloking_keys]
+        # blocking_edges: set["Node"] = set()
         self._expanded_nodes = {self._graph.find_node(self._graph.source_tensor)}
         self._expanded_edges = set()
         self._active_nodes = set()
@@ -116,15 +116,15 @@ class BackpropOrchestrator:
         while not blocked:
             self._update_active_nodes()
             self._update_expansion_candidates()
-            blocking_edges: set[MultiEdge] = set()
-            frontier: set[Node] = set()
+            blocking_edges: set["MultiEdge"] = set()
+            frontier: set["Node"] = set()
             for E in self._expansion_candidates:
-                frontier.update(E.filtered_sources)
+                frontier.update(E.sources)
             blocking_keys = [k for k in blocking_keys if not set(k).issubset(frontier)]
             for N in (N for nodes in blocking_keys for N in nodes):
                 if N.multiedge is not None:
                     blocking_edges.add(N.multiedge)
-            pruned_candidates: set[MultiEdge]
+            pruned_candidates: set["MultiEdge"]
             pruned_candidates = self._expansion_candidates - blocking_edges
             self._expanded_edges.update(pruned_candidates)
             self._expanded_nodes.update(
@@ -296,8 +296,8 @@ class BackpropOrchestrator:
     def _expand_nodes(self) -> None:
         # if exists direct function among candidates -> expand only direct functions
         candidates: list[MultiEdge] = list(self._expansion_candidates)
-        frontier: set[Node] = set()
-        groups: list[set[Node]]
+        frontier: set["Node"] = set()
+        groups: list[set["Node"]]
         direct_checks: list[bool] = ["direct" in E.xfn.method for E in candidates]
         if any(direct_checks):
             frontier.update(set((T for E in candidates for T in E.filtered_targets)))
@@ -306,7 +306,7 @@ class BackpropOrchestrator:
                 if check:
                     self._grad_operator.direct_update(
                         fn=E.xfn,
-                        sources=E.filtered_sources,
+                        sources=E.sources,
                         targets=E.targets,
                         groups=groups,
                     )
@@ -316,12 +316,12 @@ class BackpropOrchestrator:
         elif len(candidates) > 0:
             fns: dict[
                 ExtendedAutogradFunction,
-                Tuple[Tuple[Node, ...], Tuple[Union[None, Node], ...]],
+                Tuple[Tuple["Node", ...], Tuple[Union[None, "Node"], ...]],
             ]
             fns = dict()
             for E in candidates:
-                sources: Tuple[Node, ...] = E.filtered_sources
-                targets: Tuple[Union[None, Node], ...] = E.targets
+                sources: Tuple["Node", ...] = E.sources
+                targets: Tuple[Union[None, "Node"], ...] = E.targets
                 frontier.update(E.filtered_targets)
                 fns[E.xfn] = (sources, targets)
 
