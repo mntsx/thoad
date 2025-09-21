@@ -1,22 +1,13 @@
 <!-- # PyTorch High Order AutoDifferentiator (thoad) -->
-
 <!-- # $\text{{Py}{\color{#EE4C2C}T}{orch }{\color{#EE4C2C}H}{igh }{\color{#EE4C2C}O}{rder }{\color{#EE4C2C}A}{utomatic }{\color{#EE4C2C}D}{ifferentiation}}$ -->
 <img src="title.svg" alt="Logo" width="100%"/>
 
-<!--
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
-[![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/)
-[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python/cpython)
-[![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch/pytorch)
-[![black](https://img.shields.io/badge/code%20style-black-202020.svg?style=flat)](https://github.com/psf/black)
--->
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
 [![PyPi version](https://img.shields.io/pypi/v/thoad.svg?label=PyPi&color=blue)](https://pypi.org/project/thoad/)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-%23C2A000.svg)](https://github.com/python/cpython)
 [![PyTorch 2.4+](https://img.shields.io/badge/PyTorch-2.4%2B-%23EE4C2C.svg?)](https://github.com/pytorch/pytorch)
-<!--[![black](https://img.shields.io/badge/code%20style-black-202020.svg?style=flat)](https://github.com/psf/black)-->
 
 </div>
 
@@ -34,7 +25,7 @@
 ## Core Features
 
 - **Python 3.12+**: thoad is implemented in Python 3.12, and its compatible with any higher Python version.
-- **Built on PyTorch**: thoad uses PyTorch as its only dependency. It is **compatible with [+70](https://github.com/mntsx/thoad/blob/master/src/thoad/differentiation/initialization/mapping.py) PyTorch operator backwards**.
+- **Built on PyTorch**: thoad uses PyTorch as its only dependency. It is **compatible with [+70](https://github.com/mntsx/thoad/blob/master/src/thoad/differentiation/initialization/mapping.py) PyTorch operator backward functions**.
 - **Arbitrary-Order Differentiation**: thoad can compute arbitrary-order partial derivatives - including **cross node derivatives**.
 - **Adoption of the PyTorch Computational Graph**: thoad integrates with PyTorch tensors by adopting their internally traced subgraphs.
 - **High Performance**: thoad hessian comp time scales asymptotically better than [torch.autograd](https://docs.pytorch.org/docs/stable/autograd.html)'s, remaining closer to [jax.jet](https://docs.jax.dev/en/latest/jax.experimental.jet.html) performance.
