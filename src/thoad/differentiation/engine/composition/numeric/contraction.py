@@ -287,6 +287,10 @@ class SymInterface:
             ]
             for xindep in expected_indeps
         ]
+        assert all(  # likely a problem with ExtendedBackward._check_shape
+                sym in self._raw_composed_syms[i]
+                for i, syms in enumerate(self._unvaried_indep_syms) for sym in syms
+            )
         self._inactive_indep_syms: list[SymIndex] = [
             sym for d, sym in zip(external_indep, external_indep_syms) if d is None
         ]
