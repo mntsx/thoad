@@ -1066,12 +1066,12 @@ class GradOperator:
         V: VariableOperator,
         fns: dict[
             ExtendedAutogradFunction,
-            Tuple[Tuple[Node, ...], Tuple[Union[None, Node], ...]],
+            Tuple[Tuple["Node", ...], Tuple[Union[None, "Node"], ...]],
         ],
-        required_differentiations: dict[Tuple[Node, ...], bool],
+        required_differentiations: dict[Tuple["Node", ...], bool],
     ) -> Tuple[
-        dict[Tuple[Node, Tuple[Node, ...]], Union[None, Tensor]],
-        dict[Tuple[Node, Tuple[Node, ...]], Union[None, Notation]],
+        dict[Tuple["Node", Tuple["Node", ...]], Union[None, Tensor]],
+        dict[Tuple["Node", Tuple["Node", ...]], Union[None, Notation]],
     ]:
         """
         Compute all internal derivatives up to the specified order.
@@ -1093,9 +1093,9 @@ class GradOperator:
         """
 
         ### Initialize internal derivatives
-        internal_derivs: dict[Tuple[Node, Tuple[Node, ...]], Union[None, Tensor]]
+        internal_derivs: dict[Tuple["Node", Tuple["Node", ...]], Union[None, Tensor]]
         internal_derivs = dict()
-        eins_notations: dict[Tuple[Node, Tuple[Node, ...]], Union[None, Notation]]
+        eins_notations: dict[Tuple["Node", Tuple["Node", ...]], Union[None, Notation]]
         eins_notations = dict()
         for ev in V.evs:
             for o in range(1, self._order + 1):
@@ -1109,20 +1109,20 @@ class GradOperator:
                 for o in range(1, self._order + 1):
                     for ivs in itertools.product(fn_ivs, repeat=o):
                         if None not in ivs:
-                            _ivs: Tuple[Node] = tuple(_populated(iv) for iv in ivs)
+                            _ivs: Tuple["Node"] = tuple(_populated(iv) for iv in ivs)
                             if required_differentiations[_ivs]:
                                 assert isinstance(fn, ContractiveFunction)
-                                int_ev: int = fn_evs.index(fn_ev)
-                                int_ivs: Tuple[int, ...]
-                                int_ivs = tuple(fn_ivs.index(v) for v in _ivs)
-                                ID_data: IDData = fn[(int_ev, int_ivs)]
+                                num_ev: int = fn_ev.index
+                                num_ivs: Tuple[int, ...]
+                                num_ivs = tuple(fn_ivs.index(v) for v in _ivs)
+                                ID_data: IDData = fn[(num_ev, num_ivs)]
                                 internal_derivs[(fn_ev, _ivs)] = ID_data[0]
                                 eins_notations[(fn_ev, _ivs)] = ID_data[1]
 
         ### Handle non-involved external variables
         for oev in V.ovs:
             for o in range(1, self._order + 1):
-                key: Tuple[Node, Tuple[Node, ...]] = (oev, o * (oev,))
+                key: Tuple["Node", Tuple["Node", ...]] = (oev, o * (oev,))
                 internal_derivs[key] = None
                 eins_notations[key] = None
                 if o == 1:
