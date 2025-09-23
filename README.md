@@ -134,20 +134,10 @@ order = 2
 thoad.backward(tensor=Z, order=order)
 
 ### Checks
-# check derivative shapes via torch.Tensor dynamically included attribute: hgrad
+# check derivative shapes through the attribute aggregated to torch.Tensor: hgrad
 for o in range(1, 1 + order):
     assert X.hgrad[o - 1].shape == (Z.numel(), *(o * tuple(X.shape)))
     assert Y.hgrad[o - 1].shape == (Z.numel(), *(o * tuple(Y.shape)))
-# check first derivatives (jacobians)
-fn = lambda x, y: F.scaled_dot_product_attention(x, y.T, y.T)
-J = torch.autograd.functional.jacobian(fn, (X, Y))
-assert torch.allclose(J[0].flatten(), X.hgrad[0].flatten(), atol=1e-6)
-assert torch.allclose(J[1].flatten(), Y.hgrad[0].flatten(), atol=1e-6)
-# check second derivatives (hessians)
-fn = lambda x, y: F.scaled_dot_product_attention(x, y.T, y.T).sum()
-H = torch.autograd.functional.hessian(fn, (X, Y))
-assert torch.allclose(H[0][0].flatten(), X.hgrad[1].sum(0).flatten(), atol=1e-6)
-assert torch.allclose(H[1][1].flatten(), Y.hgrad[1].sum(0).flatten(), atol=1e-6)
 ```
 
 <br>
